@@ -1,0 +1,154 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const Joi = require("joi");
+const ErrorResponse = require("../utils/errorResponse");
+const asyncHandler = require("../middlewares/async");
+const User = require("../models/User");
+
+//REGISTER USER API
+
+exports.register = asyncHandler(async (req, res, next) => {
+  const picture = req.file;
+  if (picture) {
+    var uploaded_Picture = req.file.filename;
+  }
+
+  // Validation
+
+  const nestedSchema = Joi.object().keys({
+    tradename: Joi.string().max(20),
+    specialization: Joi.string().max(20),
+    score: Joi.number().max(20),
+  });
+
+  let services = Joi.array().items(nestedSchema);
+
+  const schema = Joi.object().keys({
+    username: Joi.string().min(5).max(20),
+    email: Joi.string().max(40).email(),
+    city: Joi.string().max(20),
+    password: Joi.string().min(6).max(255),
+    profile_picture: Joi.string().max(255),
+    profile_description: Joi.string().max(600),
+    isProjectOwner: Joi.boolean().default("false"),
+    role: Joi.string(),
+    isDeleted: Joi.boolean().default("false"),
+    skills: services,
+  });
+
+  const results = schema.validate(req.body);
+  if (results.error) {
+    return res.status(400).send(results.error.details[0].message);
+  }
+
+  const {
+    username,
+    email,
+    city,
+    password,
+    profile_picture,
+    profile_description,
+    isProjectOwner,
+    role,
+    isDeleted,
+    skills,
+  } = req.body;
+
+  const result = await User.findOne({ email: email });
+  if (result) {
+    res
+      .status(403)
+      .send("error_msg", "User already registered with this Email Address");
+  }
+
+  // Saving User in DataBase
+  const user = await User.create({
+    username,
+    email,
+    city,
+    password,
+    profile_picture: uploaded_Picture || "default.png",
+    profile_description,
+    isProjectOwner,
+    role,
+    isDeleted,
+    skills,
+  });
+  res.status(200).send("Customer Created Successfully");
+});
+
+//Login User
+exports.login = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  const schema = Joi.object().keys({
+    email: Joi.string().max(40).required().email(),
+    password: Joi.string().min(6).max(255).required(),
+  });
+
+  const results = schema.validate(req.body);
+  if (results.error) {
+    return res.status(400).send(results.error.details[0].message);
+  }
+
+  //validating email and password
+  if (!email || !password) {
+    return res.status(400).send("please provide email and password");
+  }
+
+  //check for user
+  const user = await User.findOne({ email: email }).select("+password");
+  if (!user) {
+    return res.status(400).send("You are not registered please signup");
+  }
+
+  // Check if password matches
+
+  const isMatch = await user.matchPassword(password);
+
+  if (!isMatch) {
+    return res.status(400).send("Password is Invalid");
+  }
+
+  sendTokenResponse(user, 200, res);
+});
+
+//Get token from Model create cookie and send response
+
+const sendTokenResponse = (user, statusCode, res) => {
+  //create token
+
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+  if (user) {
+    res
+      .status(statusCode)
+      .cookie("token", token, options)
+      .send("You are logged in successfully");
+  } else {
+    res.redirect("Something went wrong");
+  }
+};
+
+// USER Logout
+exports.logout = asyncHandler(async (req, res, next) => {
+  req.session.destroy(() => {
+    req.logOut();
+    res.clearCookie("token");
+    res.status(200).send("Logged out successfully");
+  });
+});
