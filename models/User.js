@@ -52,6 +52,11 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  material: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Material",
+    required: false,
+  },
   skills: [
     {
       skillName: {

@@ -26,6 +26,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
     skills: nestedSchema,
+    material: Joi.array().items(Joi.string()),
   });
 
   await User.findByIdAndUpdate(req.query.id, {
@@ -34,6 +35,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     profile_description: req.body.profile_description,
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
+    $push: { material: req.body.material },
   });
   res.status(200).send("Profile Updated Successfully");
 });

@@ -38,6 +38,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     role: Joi.string(),
     isDeleted: Joi.boolean().default("false"),
     skills: services,
+    material: Joi.array().items(Joi.string()),
   });
 
   const results = schema.validate(req.body);
@@ -56,6 +57,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     role,
     isDeleted,
     skills,
+    material,
   } = req.body;
 
   const result = await User.findOne({ email: email });
@@ -77,6 +79,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     role,
     isDeleted,
     skills,
+    material,
   });
   res.status(200).send("Customer Created Successfully");
 });

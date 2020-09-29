@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const SkillSchema = new mongoose.Schema({
-  tradename: {
+  tradeName: {
     type: String,
     required: false,
   },

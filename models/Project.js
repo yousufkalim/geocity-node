@@ -19,6 +19,11 @@ const ImpStepSchema = new mongoose.Schema({
     default: "ongoing",
     required: false,
   },
+  material: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Material",
+    required: false,
+  },
   contributing_user: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,7 +37,7 @@ module.exports = mongoose.model("ImpSteps", ImpStepSchema);
 /// Project Schema ///
 
 const ProjectSchema = new mongoose.Schema({
-  name: {
+  title: {
     type: String,
     required: false,
   },
@@ -41,6 +46,13 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     enum: ["Public", "Private"],
     default: "Public",
+    required: false,
+  },
+
+  stage: {
+    type: String,
+    enum: ["completed", "ongoing", "nothing"],
+    default: "ongoing",
     required: false,
   },
 

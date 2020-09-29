@@ -12,29 +12,33 @@ const Joi = require("joi");
 
 const app = express();
 
-//Body Parser
+//// Body Parser Middleware ////
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//Cookie Parser
+//// Cookie Parser ////
+
 app.use(cookieParser());
 
-//PUBLIC Folrders Configuartion
+//// PUBLIC Folrders Configuartion ////
+
 app.use("/assets", express.static("assets"));
 app.use("/views", express.static("views"));
 
-//sessions
+//// Sessions Middleware ////
 
 app.use(
   session({
     secret: "secret",
     resave: true,
-    saveinitialized: true,
+    saveUninitialized: true,
     store: new MongoStore({ mongooseConnection: mongoose.connection }),
   })
 );
 
-//DataBase Connection
+//// DataBase Connection ////
+
 mongoose
   .connect("mongodb://localhost:27017/CP", {
     useUnifiedTopology: true,
@@ -49,16 +53,20 @@ mongoose
     console.log(err);
   });
 
-//routes
+//// Routes ////
 const auth = require("./routes/auth");
 const profile = require("./routes/profile");
 const project = require("./routes/project");
+const admin = require("./routes/admin");
 
-//Mount Routers
+//// Mount Routers ////
 
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/profile", profile);
 app.use("/api/v1/project", project);
+app.use("/api/v1/admin", admin);
+
+//// Setting Port for Server ////
 
 const PORT = 3000 || process.env.PORT;
 app.listen(PORT, () => {

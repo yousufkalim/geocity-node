@@ -2,7 +2,8 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 
-// MULTER Configuaration //
+//// MULTER Configuaration ////
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "views/uploads");
@@ -13,11 +14,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Controller Functions //
+//// Controller Functions ////
 
-const { createProject } = require("../controllers/project");
+const { createProject, editProject } = require("../controllers/project");
 
-// middleware functions //
+//// middleware functions ////
 
 const {
   protect,
@@ -26,10 +27,26 @@ const {
   customer_dashboard,
 } = require("../middlewares/auth");
 
-// Models //
+//// Models ////
+
 const User = require("../models/User");
 
-// Create Project //
-router.post("/CreateProject", createProject);
+//// Create Project ////
+
+router.post(
+  "/CreateProject",
+  protect,
+  upload.single("profile_picture"),
+  createProject
+);
+
+//// EDIT Project ////
+
+router.post(
+  "/editProject",
+  protect,
+  upload.single("profile_picture"),
+  editProject
+);
 
 module.exports = router;
