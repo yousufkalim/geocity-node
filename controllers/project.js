@@ -15,7 +15,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     var uploaded_Picture = req.file.filename;
   }
 
-  // Validation
+  //// Validation ////
 
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
@@ -55,7 +55,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     project_owner,
   } = req.body;
 
-  // Saving Project in DataBase
+  //// Saving Project in DataBase ////
+
   const project = await Project.create({
     title,
     type,
@@ -67,7 +68,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     project_owner: req.user.id,
   });
 
-  // Setting Project Owner Field to TRUE in the DataBase
+  //// Setting Project Owner Field to TRUE in the DataBase ////
 
   const user_id = req.user.id;
   const user = await User.findByIdAndUpdate(user_id, {
@@ -85,7 +86,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     var uploaded_Picture = req.file.filename;
   }
 
-  // Validation
+  //// Validation ////
 
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
@@ -113,7 +114,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     return res.status(400).send(results.error.details[0].message);
   }
 
-  // Updating Implementation Steps Array //
+  //// Updating Implementation Steps Array ////
 
   await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,

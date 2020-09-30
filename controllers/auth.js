@@ -8,6 +8,7 @@ const Joi = require("joi");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
+const Material = require("../models/Material");
 
 //REGISTER USER API
 
@@ -59,6 +60,8 @@ exports.register = asyncHandler(async (req, res, next) => {
     skills,
     material,
   } = req.body;
+
+  //// Check If user exist with this Email or not ////
 
   const result = await User.findOne({ email: email });
   if (result) {

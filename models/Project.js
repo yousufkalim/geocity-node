@@ -93,6 +93,11 @@ const ProjectSchema = new mongoose.Schema({
       required: false,
     },
   ],
+  invitation: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Invitation",
+    required: false,
+  },
   implementation_steps: [ImpStepSchema],
 });
 
