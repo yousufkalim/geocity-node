@@ -26,18 +26,16 @@ exports.register = asyncHandler(async (req, res, next) => {
     score: Joi.number().max(20),
   });
 
-  let services = Joi.array().items(nestedSchema);
+  let services = Joi.array().max(3).items(nestedSchema);
 
   const schema = Joi.object().keys({
     username: Joi.string().min(5).max(20),
     email: Joi.string().max(40).email(),
     city: Joi.string().max(20),
     password: Joi.string().min(6).max(255),
+    confirm_password: Joi.string().min(6).max(255),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
-    isProjectOwner: Joi.boolean().default("false"),
-    role: Joi.string(),
-    isDeleted: Joi.boolean().default("false"),
     skills: services,
     material: Joi.array().items(Joi.string()),
   });
@@ -52,20 +50,25 @@ exports.register = asyncHandler(async (req, res, next) => {
     email,
     city,
     password,
+    confirm_password,
     profile_picture,
     profile_description,
-    isProjectOwner,
-    role,
-    isDeleted,
     skills,
     material,
   } = req.body;
-
+  //// Check If Password and Confirm Password are same or not ////
+  if (password !== confirm_password) {
+    res.status(403).send("Password and Confirm Password are not same");
+  }
+  // const skills_length = skills.length;
+  // if (!skills_length <= 3) {
+  //   res.status(404).send("Cannot add more than 3 skills");
+  // }
   //// Check If user exist with this Email or not ////
 
   const result = await User.findOne({ email: email });
   if (result) {
-    res.status(403).send("User already registered with this Email Address");
+    res.status(404).send("User already registered with this Email Address");
   } else {
     // Saving User in DataBase
     const user = await User.create({
@@ -75,9 +78,6 @@ exports.register = asyncHandler(async (req, res, next) => {
       password,
       profile_picture: uploaded_Picture || "default.png",
       profile_description,
-      isProjectOwner,
-      role,
-      isDeleted,
       skills,
       material,
     });
