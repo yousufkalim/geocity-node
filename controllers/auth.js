@@ -65,26 +65,24 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   const result = await User.findOne({ email: email });
   if (result) {
-    res
-      .status(403)
-      .send("error_msg", "User already registered with this Email Address");
+    res.status(403).send("User already registered with this Email Address");
+  } else {
+    // Saving User in DataBase
+    const user = await User.create({
+      username,
+      email,
+      city,
+      password,
+      profile_picture: uploaded_Picture || "default.png",
+      profile_description,
+      isProjectOwner,
+      role,
+      isDeleted,
+      skills,
+      material,
+    });
+    res.status(200).send("Customer Created Successfully");
   }
-
-  // Saving User in DataBase
-  const user = await User.create({
-    username,
-    email,
-    city,
-    password,
-    profile_picture: uploaded_Picture || "default.png",
-    profile_description,
-    isProjectOwner,
-    role,
-    isDeleted,
-    skills,
-    material,
-  });
-  res.status(200).send("Customer Created Successfully");
 });
 
 //Login User
