@@ -19,13 +19,14 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     specialization: Joi.string().max(20),
     score: Joi.number().max(20),
   });
+  let services = Joi.array().max(3).items(nestedSchema);
 
   const schema = Joi.object().keys({
     username: Joi.string().min(5).max(20),
     city: Joi.string().max(20),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
-    skills: nestedSchema,
+    skills: services,
     material: Joi.array().items(Joi.string()),
   });
 
@@ -38,4 +39,12 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     $push: { material: req.body.material },
   });
   res.status(200).send("Profile Updated Successfully");
+});
+
+// Delete profile
+exports.deleteProfile = asyncHandler(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Profile Deleted Successfully");
 });

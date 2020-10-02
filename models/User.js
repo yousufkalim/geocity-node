@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { ref } = require("joi");
 
 // USERS SCHEMA
 
@@ -60,6 +61,11 @@ const UserSchema = new mongoose.Schema({
   invitation: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Invitation",
+    required: false,
+  },
+  projects: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Project",
     required: false,
   },
   skills: [

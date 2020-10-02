@@ -16,7 +16,11 @@ const upload = multer({ storage: storage });
 
 //// Controller Functions ////
 
-const { createProject, editProject } = require("../controllers/project");
+const {
+  createProject,
+  editProject,
+  deleteProject,
+} = require("../controllers/project");
 
 //// middleware functions ////
 
@@ -48,5 +52,8 @@ router.post(
   upload.single("profile_picture"),
   editProject
 );
+
+//// DELETE Project ////
+router.post("/delete-project", protect, deleteProject);
 
 module.exports = router;

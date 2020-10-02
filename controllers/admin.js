@@ -22,6 +22,48 @@ exports.UsersList = asyncHandler(async (req, res, next) => {
   });
 });
 
+// EDIT USERS //
+exports.EditUser = asyncHandler(async (req, res, next) => {
+  const picture = req.file;
+  if (picture) {
+    var uploaded_Picture = req.file.filename;
+  }
+
+  const nestedSchema = Joi.object().keys({
+    tradename: Joi.string().max(20),
+    specialization: Joi.string().max(20),
+    score: Joi.number().max(20),
+  });
+  let services = Joi.array().max(3).items(nestedSchema);
+
+  const schema = Joi.object().keys({
+    username: Joi.string().min(5).max(20),
+    city: Joi.string().max(20),
+    profile_picture: Joi.string().max(255),
+    profile_description: Joi.string().max(600),
+    skills: services,
+    material: Joi.array().items(Joi.string()),
+  });
+
+  await User.findByIdAndUpdate(req.query.id, {
+    username: req.body.username,
+    city: req.body.city,
+    profile_description: req.body.profile_description,
+    profile_picture: uploaded_Picture || "default.png",
+    skills: req.body.skills,
+    $push: { material: req.body.material },
+  });
+  res.status(200).send("Profile Updated Successfully");
+});
+
+// DELETE USERS //
+exports.DeleteUser = asyncHandler(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Profile Deleted Successfully");
+});
+
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
   await Project.find(function (err, docs) {
@@ -31,6 +73,62 @@ exports.ProjectsList = asyncHandler(async (req, res, next) => {
         projects: docs,
       });
   });
+});
+
+// EDIT PROJECTS //
+exports.EditProject = asyncHandler(async (req, res, next) => {
+  const picture = req.file;
+  if (picture) {
+    var uploaded_Picture = req.file.filename;
+  }
+
+  //// Validation ////
+
+  const nestedSchema = Joi.object().keys({
+    name: Joi.string().max(20),
+    status: Joi.string(),
+    tradeName: Joi.string(),
+    speciality: Joi.string().max(20),
+    material: Joi.array().items(Joi.string()),
+    contributing_user: Joi.array().items(Joi.string()),
+  });
+
+  let services = Joi.array().items(nestedSchema);
+
+  const schema = Joi.object().keys({
+    title: Joi.string().min(5).max(40),
+    type: Joi.string(),
+    stage: Joi.string(),
+    general_photo: Joi.string().max(255),
+    general_description: Joi.string().max(600),
+    implementation_steps: services,
+    category: Joi.string(),
+  });
+
+  const results = schema.validate(req.body);
+  if (results.error) {
+    return res.status(400).send(results.error.details[0].message);
+  }
+
+  //// Updating Implementation Steps Array ////
+
+  await Project.findByIdAndUpdate(req.query.id, {
+    title: req.body.title,
+    type: req.body.type,
+    stage: req.body.stage,
+    general_description: req.body.general_description,
+    general_photo: uploaded_Picture || "default.png",
+    $push: { implementation_steps: req.body.implementation_steps },
+  });
+  res.status(200).send("Project Updated Successfully");
+});
+
+// DELETE PROJECTS //
+exports.DeleteProject = asyncHandler(async (req, res, next) => {
+  await Project.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Profile Deleted Successfully");
 });
 
 // Create Project Category//
@@ -50,6 +148,32 @@ exports.CreateCategory = asyncHandler(async (req, res, next) => {
     });
     res.status(200).send("Category added Successfully");
   }
+});
+
+// Edit Project Category //
+exports.EditCategory = asyncHandler(async (req, res, next) => {
+  const { name, color } = req.body;
+
+  //// Check If Category exists with this name or not ////
+
+  const result = await Category.findOne({ name: name });
+  if (result) {
+    res.status(400).send("Category name already exists");
+  } else {
+    await Category.findByIdAndUpdate(req.query.id, {
+      name: req.body.name,
+      color: req.body.color,
+    });
+    res.status(200).send("Category Updated Successfully");
+  }
+});
+
+// Delete Project Category //
+exports.DeleteCategory = asyncHandler(async (req, res, next) => {
+  await Category.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Category Deleted Successfully");
 });
 
 // Create Skill //

@@ -60,10 +60,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   if (password !== confirm_password) {
     res.status(403).send("Password and Confirm Password are not same");
   }
-  // const skills_length = skills.length;
-  // if (!skills_length <= 3) {
-  //   res.status(404).send("Cannot add more than 3 skills");
-  // }
+
   //// Check If user exist with this Email or not ////
 
   const result = await User.findOne({ email: email });

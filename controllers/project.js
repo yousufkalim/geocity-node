@@ -57,22 +57,26 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   //// Saving Project in DataBase ////
 
-  const project = await Project.create({
-    title,
-    type,
-    stage,
+  const project = await new Project({
+    title: req.body.title,
+    type: req.body.type,
+    stage: req.body.stage,
     general_photo: uploaded_Picture || "default.png",
-    general_description,
-    implementation_steps,
-    category,
+    general_description: req.body.general_description,
+    implementation_steps: req.body.implementation_steps,
+    category: req.body.category,
     project_owner: req.user.id,
   });
 
+  project.save(function (err, project) {
+    var newProjectId = project._id;
+  });
   //// Setting Project Owner Field to TRUE in the DataBase ////
 
   const user_id = req.user.id;
   const user = await User.findByIdAndUpdate(user_id, {
     isProjectOwner: true,
+    $push: { projects: project._id },
   });
 
   res.status(200).send("Project Created Successfully");
@@ -125,4 +129,13 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     $push: { implementation_steps: req.body.implementation_steps },
   });
   res.status(200).send("Project Updated Successfully");
+});
+
+//// DElETE PROJECT ////
+
+exports.deleteProject = asyncHandler(async (req, res, next) => {
+  await Project.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Profile Deleted Successfully");
 });
