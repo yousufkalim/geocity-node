@@ -7,6 +7,7 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
+const Invitation = require("../models/Invitation");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -138,4 +139,77 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
     isDeleted: true,
   });
   res.status(200).send("Profile Deleted Successfully");
+});
+
+//// View PROJECT ////
+
+exports.ViewProject = asyncHandler(async (req, res, next) => {
+  await Project.findById(req.query.id, function (err, result) {
+    if (err) {
+      console.log(err);
+    }
+    res.status(200).send(result);
+  });
+});
+
+//// View PROJECT ////
+
+exports.LikedBy = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  const user_name = user.username;
+  await Project.findByIdAndUpdate(req.query.id, {
+    $push: { likedBy: req.user.id },
+  });
+  res.status(200).send(user_name + " Liked the Project");
+});
+
+//// Request to view a Project ////
+
+exports.RequestToView = asyncHandler(async (req, res, next) => {
+  const sender = req.user.id;
+  const project = req.query.id;
+  const targeted_project = await Project.findById(project);
+  const receiver = targeted_project.project_owner;
+  const newInvitation = new Invitation({
+    sender: sender,
+    receiver: receiver,
+    projectID: project,
+  });
+  newInvitation
+    .save()
+    .then(
+      await Project.findByIdAndUpdate(req.query.id, {
+        $push: { invitation: newInvitation._id },
+      })
+    )
+    .then(
+      await User.findByIdAndUpdate(receiver, {
+        $push: { invitation: newInvitation._id },
+      })
+    );
+  res
+    .status(200)
+    .send("Request to see this project has been submitted successfully");
+});
+
+//// Invite users to contribute ////
+
+exports.InviteUser = asyncHandler(async (req, res, next) => {
+  const sender = req.user.id;
+  const project = req.query.id;
+  const receiver = req.body.receiver;
+  const skill = req.body.skills;
+
+  const newInvitation = new Invitation({
+    sender: sender,
+    receiver: receiver,
+    projectID: project,
+    skillID: skill,
+  });
+  newInvitation.save().then(
+    await User.findByIdAndUpdate(receiver, {
+      $push: { invitation: newInvitation._id },
+    })
+  );
+  res.status(200).send(newInvitation);
 });

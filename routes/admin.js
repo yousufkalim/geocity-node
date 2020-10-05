@@ -14,7 +14,11 @@ const {
   EditCategory,
   DeleteCategory,
   CreateSkill,
+  EditSkill,
+  DeleteSkill,
   CreateMaterial,
+  EditMaterial,
+  DeleteMaterial,
 } = require("../controllers/admin");
 
 // Middleware Functions //
@@ -48,8 +52,16 @@ router.post("/delete-category", protect, DeleteCategory);
 
 // Create Skills Route //
 router.post("/create-skill", protect, CreateSkill);
+// EDIT PROJECTS CATEGORY ROJUTE //
+router.post("/edit-skill", protect, EditSkill);
+// DELETE PROJECTS CATEGORY ROJUTE //
+router.post("/delete-skill", protect, DeleteSkill);
 
 // Create Materials Route //
 router.post("/create-material", protect, CreateMaterial);
+// EDIT PROJECTS CATEGORY ROJUTE //
+router.post("/edit-material", protect, EditMaterial);
+// DELETE PROJECTS CATEGORY ROJUTE //
+router.post("/delete-material", protect, DeleteMaterial);
 
 module.exports = router;

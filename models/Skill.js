@@ -5,6 +5,11 @@ const SkillSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  isDeleted: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Skill", SkillSchema);

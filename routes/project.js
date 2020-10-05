@@ -20,6 +20,10 @@ const {
   createProject,
   editProject,
   deleteProject,
+  ViewProject,
+  LikedBy,
+  RequestToView,
+  InviteUser,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -55,5 +59,17 @@ router.post(
 
 //// DELETE Project ////
 router.post("/delete-project", protect, deleteProject);
+
+//// View Single Project  ////
+router.get("/view-project", protect, ViewProject);
+
+//// LikedBy Route ////
+router.post("/view-project/likedBy", protect, LikedBy);
+
+//// Request to view a Project  ////
+router.post("/view-project/send-request", protect, RequestToView);
+
+//// Invite users to contribute  ////
+router.post("/view-project/send-invite", protect, InviteUser);
 
 module.exports = router;

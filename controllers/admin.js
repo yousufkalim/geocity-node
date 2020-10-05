@@ -128,7 +128,7 @@ exports.DeleteProject = asyncHandler(async (req, res, next) => {
   await Project.findByIdAndUpdate(req.query.id, {
     isDeleted: true,
   });
-  res.status(200).send("Profile Deleted Successfully");
+  res.status(200).send("Project Deleted Successfully");
 });
 
 // Create Project Category//
@@ -194,7 +194,32 @@ exports.CreateSkill = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Create Skill //
+// Edit Skill //
+exports.EditSkill = asyncHandler(async (req, res, next) => {
+  const { name } = req.body;
+
+  //// Check If Category exists with this name or not ////
+
+  const result = await Skill.findOne({ tradeName: name });
+  if (result) {
+    res.status(400).send("Skill name already exists");
+  } else {
+    await Skill.findByIdAndUpdate(req.query.id, {
+      tradeName: req.body.name,
+    });
+    res.status(200).send("Skill Name Updated Successfully");
+  }
+});
+
+// Delete Skill //
+exports.DeleteSkill = asyncHandler(async (req, res, next) => {
+  await Skill.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Skill Deleted Successfully");
+});
+
+// Create Material //
 exports.CreateMaterial = asyncHandler(async (req, res, next) => {
   const { name } = req.body;
 
@@ -210,4 +235,29 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     });
     res.status(200).send("Material added Successfully");
   }
+});
+
+// Edit Material //
+exports.EditMaterial = asyncHandler(async (req, res, next) => {
+  const { name } = req.body;
+
+  //// Check If Category exists with this name or not ////
+
+  const result = await Material.findOne({ name: name });
+  if (result) {
+    res.status(400).send("Material name already exists");
+  } else {
+    await Material.findByIdAndUpdate(req.query.id, {
+      name: req.body.name,
+    });
+    res.status(200).send("Material Name Updated Successfully");
+  }
+});
+
+// Delete Skill //
+exports.DeleteMaterial = asyncHandler(async (req, res, next) => {
+  await Material.findByIdAndUpdate(req.query.id, {
+    isDeleted: true,
+  });
+  res.status(200).send("Material Deleted Successfully");
 });
