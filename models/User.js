@@ -42,6 +42,10 @@ const UserSchema = new mongoose.Schema({
     required: false,
     select: false,
   },
+  availability: {
+    type: String,
+    required: false,
+  },
 
   resetPasswordToken: String,
   restPasswordExpires: Date,

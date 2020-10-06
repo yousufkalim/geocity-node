@@ -23,7 +23,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   const nestedSchema = Joi.object().keys({
     tradename: Joi.string().max(20),
     specialization: Joi.string().max(20),
-    score: Joi.number().max(20),
+    score: Joi.number().max(5),
   });
 
   let services = Joi.array().max(3).items(nestedSchema);
@@ -33,6 +33,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     email: Joi.string().max(40).email(),
     city: Joi.string().max(20),
     password: Joi.string().min(6).max(255),
+    availability: Joi.string().min(6).max(255),
     confirm_password: Joi.string().min(6).max(255),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
@@ -50,6 +51,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     email,
     city,
     password,
+    availability,
     confirm_password,
     profile_picture,
     profile_description,
@@ -73,6 +75,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       email,
       city,
       password,
+      availability,
       profile_picture: uploaded_Picture || "default.png",
       profile_description,
       skills,
