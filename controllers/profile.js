@@ -30,7 +30,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     material: Joi.array().items(Joi.string()),
   });
 
-  await User.findByIdAndUpdate(req.query.id, {
+  const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
     city: req.body.city,
     profile_description: req.body.profile_description,
@@ -38,13 +38,13 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     skills: req.body.skills,
     $push: { material: req.body.material },
   });
-  res.status(200).send("Profile Updated Successfully");
+  res.status(200).json({user : user})
 });
 
 // Delete profile
 exports.deleteProfile = asyncHandler(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.query.id, {
+  const user = await User.findByIdAndUpdate(req.query.id, {
     isDeleted: true,
   });
-  res.status(200).send("Profile Deleted Successfully");
+  res.status(200).json({user : user})
 });

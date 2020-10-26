@@ -16,7 +16,7 @@ exports.UsersList = asyncHandler(async (req, res, next) => {
   await User.find({ role: "user" }, function (err, docs) {
     if (err) res.json(err);
     else
-      res.status(200).send({
+      res.status(200).json({
         users: docs,
       });
   });
@@ -45,7 +45,7 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     material: Joi.array().items(Joi.string()),
   });
 
-  await User.findByIdAndUpdate(req.query.id, {
+  const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
     city: req.body.city,
     profile_description: req.body.profile_description,
@@ -53,12 +53,12 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     skills: req.body.skills,
     $push: { material: req.body.material },
   });
-  res.status(200).send("Profile Updated Successfully");
+  res.status(200).json({user : user})
 });
 
 // DELETE USERS //
 exports.DeleteUser = asyncHandler(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.query.id, {
+  const user = await User.findByIdAndUpdate(req.query.id, {
     isDeleted: true,
   });
   res.status(200).send("Profile Deleted Successfully");
@@ -69,7 +69,7 @@ exports.ProjectsList = asyncHandler(async (req, res, next) => {
   await Project.find(function (err, docs) {
     if (err) res.json(err);
     else
-      res.status(200).send({
+      res.status(200).json({
         projects: docs,
       });
   });
@@ -112,7 +112,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
 
   //// Updating Implementation Steps Array ////
 
-  await Project.findByIdAndUpdate(req.query.id, {
+  const project = await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,
     type: req.body.type,
     stage: req.body.stage,
@@ -120,7 +120,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
     general_photo: uploaded_Picture || "default.png",
     $push: { implementation_steps: req.body.implementation_steps },
   });
-  res.status(200).send("Project Updated Successfully");
+  res.status(200).json({project : project})
 });
 
 // DELETE PROJECTS //
@@ -146,7 +146,7 @@ exports.CreateCategory = asyncHandler(async (req, res, next) => {
       name,
       color,
     });
-    res.status(200).send("Category added Successfully");
+    res.status(200).json({category : category})
   }
 });
 
@@ -160,11 +160,11 @@ exports.EditCategory = asyncHandler(async (req, res, next) => {
   if (result) {
     res.status(400).send("Category name already exists");
   } else {
-    await Category.findByIdAndUpdate(req.query.id, {
+    const category = await Category.findByIdAndUpdate(req.query.id, {
       name: req.body.name,
       color: req.body.color,
     });
-    res.status(200).send("Category Updated Successfully");
+    res.status(200).json({category : category})
   }
 });
 
@@ -190,7 +190,7 @@ exports.CreateSkill = asyncHandler(async (req, res, next) => {
     const skill = await Skill.create({
       tradeName: req.body.name,
     });
-    res.status(200).send("Skill added Successfully");
+    res.status(200).json({skill : skill});
   }
 });
 
@@ -204,10 +204,10 @@ exports.EditSkill = asyncHandler(async (req, res, next) => {
   if (result) {
     res.status(400).send("Skill name already exists");
   } else {
-    await Skill.findByIdAndUpdate(req.query.id, {
+   const skill = await Skill.findByIdAndUpdate(req.query.id, {
       tradeName: req.body.name,
     });
-    res.status(200).send("Skill Name Updated Successfully");
+    res.status(200).json({skill : skill})
   }
 });
 
@@ -233,7 +233,7 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     const material = await Material.create({
       name: req.body.name,
     });
-    res.status(200).send("Material added Successfully");
+    res.status(200).json({material : material})
   }
 });
 
@@ -247,10 +247,10 @@ exports.EditMaterial = asyncHandler(async (req, res, next) => {
   if (result) {
     res.status(400).send("Material name already exists");
   } else {
-    await Material.findByIdAndUpdate(req.query.id, {
+    const material = await Material.findByIdAndUpdate(req.query.id, {
       name: req.body.name,
     });
-    res.status(200).send("Material Name Updated Successfully");
+    res.status(200).json({material : material})
   }
 });
 

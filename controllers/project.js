@@ -18,12 +18,15 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   //// Validation ////
 
+  // validation for implementation steps schema //
+
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
     status: Joi.string(),
     tradeName: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
+    description : Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
 
@@ -32,6 +35,11 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(20),
     type: Joi.string(),
+    city: Joi.string(),
+    address: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
     stage: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
@@ -56,11 +64,23 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     project_owner,
   } = req.body;
 
+  // If project has not assigned City //
+
+  var city = req.body.city;
+  if(!city){
+    city = req.user.city
+  }
+
   //// Saving Project in DataBase ////
 
   const project = await new Project({
     title: req.body.title,
     type: req.body.type,
+    city : city,
+    address : req.body.address,
+    zipCode : req.body.zipCode,
+    latitude : req.body.latitude,
+    longitude : req.body.longitude,
     stage: req.body.stage,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
@@ -72,6 +92,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   project.save(function (err, project) {
     var newProjectId = project._id;
   });
+
   //// Setting Project Owner Field to TRUE in the DataBase ////
 
   const user_id = req.user.id;
@@ -80,7 +101,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     $push: { projects: project._id },
   });
 
-  res.status(200).send("Project Created Successfully");
+  res.status(200).json({project : project})
 });
 
 //// EDIT PROJECT ////
@@ -99,6 +120,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     tradeName: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
+    description : Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
 
@@ -107,6 +129,11 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(40),
     type: Joi.string(),
+    city: Joi.string(),
+    address: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
     stage: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(600),
@@ -119,40 +146,50 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     return res.status(400).send(results.error.details[0].message);
   }
 
+  var city = req.body.city;
+  if(!city){
+    city = req.user.city
+  }
+
   //// Updating Implementation Steps Array ////
 
-  await Project.findByIdAndUpdate(req.query.id, {
+  const project = await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,
     type: req.body.type,
+    city : city,
+    address : req.body.address,
+    zipCode : req.body.zipCode,
+    latitude : req.body.latitude,
+    longitude : req.body.longitude,
     stage: req.body.stage,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
     $push: { implementation_steps: req.body.implementation_steps },
   });
-  res.status(200).send("Project Updated Successfully");
+  res.status(200).json({project : project})
 });
 
 //// DElETE PROJECT ////
 
 exports.deleteProject = asyncHandler(async (req, res, next) => {
-  await Project.findByIdAndUpdate(req.query.id, {
+  const project = await Project.findByIdAndUpdate(req.query.id, {
     isDeleted: true,
   });
-  res.status(200).send("Profile Deleted Successfully");
+  res.status(200).json({project : project})
 });
 
 //// View PROJECT ////
 
 exports.ViewProject = asyncHandler(async (req, res, next) => {
-  await Project.findById(req.query.id, function (err, result) {
+  const project = await Project.findById(req.query.id, function (err, result) {
     if (err) {
       console.log(err);
     }
-    res.status(200).send(result);
+    res.status(200).json({project : result});
   });
 });
 
-//// View PROJECT ////
+//// LikedBy ////
 
 exports.LikedBy = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
@@ -160,7 +197,7 @@ exports.LikedBy = asyncHandler(async (req, res, next) => {
   await Project.findByIdAndUpdate(req.query.id, {
     $push: { likedBy: req.user.id },
   });
-  res.status(200).send(user_name + " Liked the Project");
+  res.status(200).json({user : user_name})
 });
 
 //// Request to view a Project ////
@@ -188,8 +225,7 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
       })
     );
   res
-    .status(200)
-    .send("Request to see this project has been submitted successfully");
+    .status(200).json({Invitation : newInvitation})
 });
 
 //// Invite users to contribute ////
@@ -211,5 +247,5 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
       $push: { invitation: newInvitation._id },
     })
   );
-  res.status(200).send(newInvitation);
+  res.status(200).json({Invitation : newInvitation})
 });

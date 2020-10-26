@@ -34,7 +34,7 @@ const User = require("../models/User");
 router.get("/register", async function (req, res) {});
 router.post("/register", upload.single("profile_picture"), register);
 
-//LOGIN Routes
+//LOGIN Route
 
 router.post("/login", login);
 

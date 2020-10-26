@@ -24,6 +24,10 @@ const ImpStepSchema = new mongoose.Schema({
     ref: "Material",
     required: false,
   },
+  description : {
+    type : String,
+    required : false
+  },
   contributing_user: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -48,7 +52,26 @@ const ProjectSchema = new mongoose.Schema({
     default: "Public",
     required: false,
   },
-
+  city : {
+    type : String,
+    required : false,
+  },
+  address : {
+    type : String,
+    required : false,
+  },
+  zipCode : {
+    type : String,
+    required : false,
+  },
+  latitude : {
+    type : String,
+    required : false,
+  },
+  longitude : {
+    type : String,
+    required : false,
+  },
   stage: {
     type: String,
     enum: ["completed", "ongoing", "nothing"],

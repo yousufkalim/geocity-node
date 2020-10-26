@@ -81,7 +81,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       skills,
       material,
     });
-    res.status(200).send("Customer Created Successfully");
+    res.status(200).json({user : user});
   }
 });
 
@@ -142,9 +142,9 @@ const sendTokenResponse = (user, statusCode, res) => {
     res
       .status(statusCode)
       .cookie("token", token, options)
-      .send("You are logged in successfully");
+      .json({token : token});
   } else {
-    res.redirect("Something went wrong");
+    res.send("Something went wrong");
   }
 };
 
