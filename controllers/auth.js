@@ -31,7 +31,11 @@ exports.register = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     username: Joi.string().min(5).max(20),
     email: Joi.string().max(40).email(),
-    city: Joi.string().max(20),
+    city: Joi.string(),
+    address: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),    
     password: Joi.string().min(6).max(255),
     availability: Joi.string().min(6).max(255),
     confirm_password: Joi.string().min(6).max(255),

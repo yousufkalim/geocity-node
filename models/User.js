@@ -14,9 +14,25 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  city: {
-    type: String,
-    required: false,
+  city : {
+    type : String,
+    required : false,
+  },
+  address : {
+    type : String,
+    required : false,
+  },
+  zipCode : {
+    type : String,
+    required : false,
+  },
+  latitude : {
+    type : String,
+    required : false,
+  },
+  longitude : {
+    type : String,
+    required : false,
   },
   profile_picture: {
     type: String,
@@ -42,6 +58,18 @@ const UserSchema = new mongoose.Schema({
     required: false,
     select: false,
   },
+  comments : [{
+    user : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "User",
+      required : false
+    },
+    
+    comment : {
+      type : String,
+      required : false
+    }
+  }],
   availability: {
     type: String,
     required: false,

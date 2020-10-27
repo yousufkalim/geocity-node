@@ -7,6 +7,18 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 
+
+//// View PROFILE ////
+
+exports.viewProfile = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.query.id, function (err, result) {
+    if (err) {
+      console.log(err);
+    }
+    res.status(200).json({user : result});
+  });
+});
+
 // Edit profile
 exports.editProfile = asyncHandler(async (req, res, next) => {
   const picture = req.file;
@@ -32,7 +44,11 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 
   const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
-    city: req.body.city,
+    city: Joi.string(),
+    address: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
     profile_description: req.body.profile_description,
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
@@ -47,4 +63,20 @@ exports.deleteProfile = asyncHandler(async (req, res, next) => {
     isDeleted: true,
   });
   res.status(200).json({user : user})
+});
+
+//// Comments ////
+
+exports.comment = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  const user_name = user.username;
+  const comment = req.body.comment;
+  const newComment = {
+    user : user,
+    comment : comment
+  }
+  await User.findByIdAndUpdate(req.query.id, {
+    $push: {comments : newComment}
+  });
+  res.status(200).json({user : user_name , comment : comment})
 });

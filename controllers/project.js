@@ -200,6 +200,22 @@ exports.LikedBy = asyncHandler(async (req, res, next) => {
   res.status(200).json({user : user_name})
 });
 
+//// Comments ////
+
+exports.comment = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  const user_name = user.username;
+  const comment = req.body.comment;
+  const newComment = {
+    user : user,
+    comment : comment
+  }
+  await Project.findByIdAndUpdate(req.query.id, {
+    $push: {comments : newComment}
+  });
+  res.status(200).json({user : user_name , comment : comment})
+});
+
 //// Request to view a Project ////
 
 exports.RequestToView = asyncHandler(async (req, res, next) => {
@@ -249,3 +265,19 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
   );
   res.status(200).json({Invitation : newInvitation})
 });
+
+// Delete Contributors from a single Step //
+
+exports.deleteContributor = asyncHandler(async (req, res, next) => {
+
+  const projectID = req.query.id,
+  const step_Id = req.body.step_Id,
+  const user = req.body.user_id,
+
+  const project = await Project.findByIdAndUpdate(projectID,{
+    
+  })
+
+
+
+})

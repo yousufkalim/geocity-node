@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const User = require("./User");
 
 const ImpStepSchema = new mongoose.Schema({
   name: {
@@ -116,6 +117,18 @@ const ProjectSchema = new mongoose.Schema({
       required: false,
     },
   ],
+  comments : [{
+    user : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "User",
+      required : false
+    },
+    
+    comment : {
+      type : String,
+      required : false
+    }
+  }],
   invitation: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Invitation",

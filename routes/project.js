@@ -22,6 +22,7 @@ const {
   deleteProject,
   ViewProject,
   LikedBy,
+  comment,
   RequestToView,
   InviteUser,
 } = require("../controllers/project");
@@ -65,6 +66,9 @@ router.get("/view-project", protect, ViewProject);
 
 //// LikedBy Route ////
 router.post("/view-project/likedBy", protect, LikedBy);
+
+//// Comments Route ////
+router.post("/view-project/comment", protect, comment);
 
 //// Request to view a Project  ////
 router.post("/view-project/send-request", protect, RequestToView);

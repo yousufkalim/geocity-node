@@ -15,7 +15,7 @@ const upload = multer({ storage: storage });
 
 // Controller Functions //
 
-const { editProfile, deleteProfile } = require("../controllers/profile");
+const { editProfile, deleteProfile, comment, viewProfile} = require("../controllers/profile");
 
 // middleware functions //
 
@@ -36,5 +36,12 @@ router.post("/editProfile", upload.single("profile_picture"), editProfile);
 
 // DELETE PROFILE //
 router.post("/delete-profile", protect, deleteProfile);
+
+// View Profile // 
+router.get("/view-profile",protect,viewProfile)
+
+//// Comments Route ////
+router.post("/view-profile/comment", protect, comment);
+
 
 module.exports = router;
