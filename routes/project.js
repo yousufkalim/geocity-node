@@ -25,6 +25,7 @@ const {
   comment,
   RequestToView,
   InviteUser,
+  deleteContributor
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -75,5 +76,8 @@ router.post("/view-project/send-request", protect, RequestToView);
 
 //// Invite users to contribute  ////
 router.post("/view-project/send-invite", protect, InviteUser);
+
+//// Delete users to contribute against a single step ////
+router.post("/view-project/delete-contributing-user", protect, deleteContributor);
 
 module.exports = router;

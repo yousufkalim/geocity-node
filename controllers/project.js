@@ -8,6 +8,7 @@ const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
+const { func } = require("joi");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -270,14 +271,21 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
 
 exports.deleteContributor = asyncHandler(async (req, res, next) => {
 
-  const projectID = req.query.id,
-  const step_Id = req.body.step_Id,
-  const user = req.body.user_id,
+  const projectID = req.query.id;
+  const step_Id = req.body.step_Id;
+  const user = req.body.user_id;
 
-  const project = await Project.findByIdAndUpdate(projectID,{
-    
+  const result = await Project.findById(projectID, (err,docs) => {
+    if(err){
+      console.log(err);
+    }else {
+      const steps = docs.implementation_steps;
+      const newArray = steps.filter(function(val){
+        return val._id  == step_Id
+      })
+      console.log(newArray[0].contributing_user);
+    }
   })
-
-
+  res.status(200).send("Removed this user successfully")
 
 })
