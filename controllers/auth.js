@@ -42,7 +42,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
     skills: services,
-    material: Joi.array().items(Joi.string()),
+    material: Joi.array().max(50).items(Joi.string()),
   });
 
   const results = schema.validate(req.body);

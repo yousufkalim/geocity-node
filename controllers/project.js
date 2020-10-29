@@ -170,15 +170,6 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   res.status(200).json({project : project})
 });
 
-//// DElETE PROJECT ////
-
-exports.deleteProject = asyncHandler(async (req, res, next) => {
-  const project = await Project.findByIdAndUpdate(req.query.id, {
-    isDeleted: true,
-  });
-  res.status(200).json({project : project})
-});
-
 //// View PROJECT ////
 
 exports.ViewProject = asyncHandler(async (req, res, next) => {
@@ -275,17 +266,72 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
   const step_Id = req.body.step_Id;
   const user = req.body.user_id;
 
-  const result = await Project.findById(projectID, (err,docs) => {
-    if(err){
+  const result = await Project.findById(projectID);
+    if(!result){
       console.log(err);
-    }else {
-      const steps = docs.implementation_steps;
-      const newArray = steps.filter(function(val){
-        return val._id  == step_Id
-      })
-      console.log(newArray[0].contributing_user);
-    }
-  })
-  res.status(200).send("Removed this user successfully")
+    } else {
+    const steps = result.implementation_steps;
+    let stepIndex;
+    steps.map((val,index) => {
+     if( val._id.toString() === step_Id.toString()){
+        stepIndex = index
+      }
+    })
 
+      const index = steps[stepIndex].contributing_user.indexOf(user)
+      if (index > -1) {
+        steps[stepIndex].contributing_user.splice(index, 1);
+      }
+      result.implementation_steps= steps;
+      const newResult = await result.save()
+    }
+  res.status(200).send("Removed this user successfully")
 })
+
+//// DElETE PROJECT ////
+
+exports.deleteProject = asyncHandler(async (req, res, next) => {
+  let contributingUsers = [];
+  const projectID = req.query.id;
+  const user = req.user.id;
+
+  const project = await Project.findById(projectID);
+  const projectOwner = project.project_owner;
+  if(projectOwner == user){
+    const steps = project.implementation_steps;
+    steps.map(function(val){
+      contributingUsers.push({
+        id: val.contributing_user,
+        decision: null
+      })
+  })
+    if(contributingUsers.length > 1){
+      contributingUsers.map(async function(val){
+        const user = await User.findById(val)
+        console.log(user);
+        // send notification // 
+        // user.notifications.push({
+        //   title: "Project Deletion by Project Owner",
+        //   description : "Project Owner has requested to delete this Project"
+        // })
+        // await user.save()      
+    })
+    }else{
+      const project = await Project.findByIdAndUpdate(projectID,{
+        isDeleted : true
+      })
+    }
+
+    // const newDoc = new ProjectDecision(
+    //   {
+    //     name: '',
+    //     contributer: contributingUsers
+    //   }
+    // )
+   
+    res.send(contributingUsers) 
+
+  }else {
+    res.status(403).send("you are not authorized to delete this project")
+  }
+});

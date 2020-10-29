@@ -6,6 +6,7 @@ const Joi = require("joi");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
+const Project = require("../models/Project");
 
 
 //// View PROFILE ////
@@ -39,7 +40,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
     skills: services,
-    material: Joi.array().items(Joi.string()),
+    material: Joi.array().max(50).items(Joi.string()),
   });
 
   const user = await User.findByIdAndUpdate(req.query.id, {
@@ -80,3 +81,26 @@ exports.comment = asyncHandler(async (req, res, next) => {
   });
   res.status(200).json({user : user_name , comment : comment})
 });
+
+// Get List of projects where User is Project Owner //
+exports.ownedProjects = asyncHandler(async (req, res, next) => {
+  let owned_projects = [];
+  let contributing_projects = [];
+  const userId = req.user.id;
+  const user = await User.findById(userId);
+  if(user.isProjectOwner == true){
+    await Promise.all(user.projects.map(async function(val){
+      const project = await Project.findById(val);
+      
+      if(project.project_owner == userId){
+        owned_projects.push(val)
+      }else{
+        contributing_projects.push(val)
+      }
+    }))
+  }else{
+    contributing_projects.push(user.projects)
+  }
+
+  res.status(200).json({ownedProjects : owned_projects, contributingProjects : contributing_projects})
+})
