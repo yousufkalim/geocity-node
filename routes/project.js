@@ -25,7 +25,10 @@ const {
   comment,
   RequestToView,
   InviteUser,
-  deleteContributor
+  deleteContributor,
+  SearchByCity,
+  SearchBySkill,
+  SearchByCategory
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -79,5 +82,14 @@ router.post("/view-project/send-invite", protect, InviteUser);
 
 //// Delete users to contribute against a single step ////
 router.post("/view-project/delete-contributing-user", protect, deleteContributor);
+
+//// Search Project by City Name ////
+router.get("/search/city", protect, SearchByCity);
+
+//// Search Project by Skill Name ////
+router.get("/search/skill", protect, SearchBySkill);
+
+//// Search Project by Category Name ////
+router.get("/search/category", protect, SearchByCategory);
 
 module.exports = router;

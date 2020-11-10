@@ -335,3 +335,43 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
     res.status(403).send("you are not authorized to delete this project")
   }
 });
+
+
+// Project Filters // 
+
+// By City Name //
+exports.SearchByCity = asyncHandler(async (req, res, next) => {
+  const city = req.body.city;
+ 
+  const project = await Project.find({city : city});
+    if(project == ""){
+      res.status(200).send("No project found with this City name")
+    
+    } else {
+    res.status(200).json(project)  
+    }
+})
+
+// By Skill Name //
+exports.SearchBySkill = asyncHandler(async (req, res, next) => {
+  const skill = req.body.skill;
+ 
+  const project = await Project.find({
+    "implementation_steps.tradeName" : {$eq : skill}
+  })
+ 
+    res.status(200).json(project)
+})
+
+// By Category Name //
+exports.SearchByCategory = asyncHandler(async (req, res, next) => {
+  const category = req.body.category;
+  const project = await Project.find({
+    category : category
+  })
+  if(project == ""){
+    res.status(200).send("No project found with this Category name")
+  } else {
+  res.status(200).json(project)  
+  }
+})
