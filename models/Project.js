@@ -90,6 +90,20 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  contributingUsers_decision: [
+    {
+      id: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "User"
+      },
+      decision : Boolean,
+      required : false
+    },
+  ],
+  deletionRequestTime: {
+    type : Date,
+    default : Date.now
+  },
 
   createdAt: {
     type: Date,

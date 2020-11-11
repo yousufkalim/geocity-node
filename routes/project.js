@@ -20,6 +20,7 @@ const {
   createProject,
   editProject,
   deleteProject,
+  takeDecision,
   ViewProject,
   LikedBy,
   comment,
@@ -64,6 +65,9 @@ router.post(
 
 //// DELETE Project ////
 router.post("/delete-project", protect, deleteProject);
+
+//// DELETE Project ////
+router.post("/take-decision", protect, takeDecision);
 
 //// View Single Project  ////
 router.get("/view-project", protect, ViewProject);

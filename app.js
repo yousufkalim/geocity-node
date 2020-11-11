@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
+require("./jobs/agenda");
 
 const app = express();
 

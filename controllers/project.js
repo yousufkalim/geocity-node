@@ -300,41 +300,62 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
   if(projectOwner == user){
     const steps = project.implementation_steps;
     steps.map(function(val){
-      contributingUsers.push({
-        id: val.contributing_user,
-        decision: null
-      })
-  })
-    if(contributingUsers.length > 1){
-      contributingUsers.map(async function(val){
-        const user = await User.findById(val)
-        console.log(user);
-        // send notification // 
-        // user.notifications.push({
-        //   title: "Project Deletion by Project Owner",
-        //   description : "Project Owner has requested to delete this Project"
-        // })
-        // await user.save()      
+      contributingUsers.push(
+        val.contributing_user
+      )
     })
-    }else{
+  }
+    if(contributingUsers){
+      contributingUsers.map(async function(val){
+        const user = await User.findByIdAndUpdate(val,{
+          $push : {"notifications":{
+            title : "Project Deletion by Project Owner",
+            description: "Project Owner has requested to delete this Project"
+        }}
+      })       
+    })
+    const project = await Project.findByIdAndUpdate(projectID, {
+      deletionRequestTime: new Date()
+    })
+  }
+  
+    else {
       const project = await Project.findByIdAndUpdate(projectID,{
         isDeleted : true
       })
     }
-
-    // const newDoc = new ProjectDecision(
-    //   {
-    //     name: '',
-    //     contributer: contributingUsers
-    //   }
-    // )
    
     res.send(contributingUsers) 
 
-  }else {
-    res.status(403).send("you are not authorized to delete this project")
+  // }else {
+  //   res.status(403).send("you are not authorized to delete this project")
+  // }
+})
+
+
+// By City Name //
+exports.takeDecision = asyncHandler(async (req, res, next) => {
+  const decision = req.body.decision;
+  const projectID = req.query.id;
+  
+  if(!decision || typeof decision !== "boolean"){
+    // send error 401;
   }
-});
+  const project = await Project.findById(projectID);
+  if(project.isDeleted) {
+    res.status(400).json({message:"Already deleted"})
+    return;
+  }
+  // true = yes delete, false = no delete
+  project.isDeleted = decision ? true : false;
+  project.contributingUsers_decision.push({
+    id: req.user._id,
+    decision
+  })
+  await project.save();
+  res.status(200).json("done")
+
+})
 
 
 // Project Filters // 

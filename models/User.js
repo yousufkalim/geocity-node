@@ -87,8 +87,8 @@ const UserSchema = new mongoose.Schema({
   }],
   notifications: [
     {
-      title: String,
-      description: String,
+      title : String,
+      description : String
     },
   ],
   availability: {

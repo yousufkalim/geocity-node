@@ -21,7 +21,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   // Validation
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    tradename: Joi.string().max(30),
     specialization: Joi.string().max(20),
     score: Joi.number().max(5),
   });
@@ -43,6 +43,8 @@ exports.register = asyncHandler(async (req, res, next) => {
     profile_description: Joi.string().max(600),
     skills: services,
     material: Joi.array().max(50).items(Joi.string()),
+    notifications: Joi.array()
+
   });
 
   const results = schema.validate(req.body);
@@ -61,6 +63,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     profile_description,
     skills,
     material,
+    notifications
   } = req.body;
   //// Check If Password and Confirm Password are same or not ////
   if (password !== confirm_password) {
@@ -84,6 +87,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       profile_description,
       skills,
       material,
+      notifications
     });
     res.status(200).json({user : user});
   }
