@@ -29,7 +29,10 @@ const {
   deleteContributor,
   SearchByCity,
   SearchBySkill,
-  SearchByCategory
+  SearchByCategory,
+  SearchCollaboratorsBySkill,
+  SearchCollaboratorsByMaterial,
+  SearchCollaboratorsByCategory
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -66,7 +69,7 @@ router.post(
 //// DELETE Project ////
 router.post("/delete-project", protect, deleteProject);
 
-//// DELETE Project ////
+//// Collaborators Decisions to Delete Project ////
 router.post("/take-decision", protect, takeDecision);
 
 //// View Single Project  ////
@@ -95,5 +98,14 @@ router.get("/search/skill", protect, SearchBySkill);
 
 //// Search Project by Category Name ////
 router.get("/search/category", protect, SearchByCategory);
+
+//// Search Collaborators with Skill Name ////
+router.get("/SearchCollaboratorsBySkill", protect, SearchCollaboratorsBySkill);
+
+//// Search Collaborators with Material Name ////
+router.get("/SearchCollaboratorsByMaterial", protect, SearchCollaboratorsByMaterial);
+
+//// Search Collaborators with Category Name ////
+router.get("/SearchCollaboratorsByCategory", protect, SearchCollaboratorsByCategory);
 
 module.exports = router;

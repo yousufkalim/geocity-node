@@ -28,7 +28,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
   }
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    skillField: Joi.string().max(30),
     specialization: Joi.string().max(20),
     score: Joi.number().max(20),
   });
@@ -45,11 +45,11 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 
   const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
+    city: req.body.city,
+    address: req.body.address,
+    zipCode: req.body.zipCode,
+    latitude: req.body.latitude,
+    longitude: req.body.longitude,
     profile_description: req.body.profile_description,
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
@@ -103,4 +103,33 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ownedProjects : owned_projects, contributingProjects : contributing_projects})
+})
+
+// Indicating what type of Projects User is interested In //
+exports.Interests = asyncHandler(async (req, res, next) => {
+  const userID  = req.user.id;
+  const interest = req.body.interest;
+
+  const user = await User.findById(userID);
+  const interests = user.interests;
+  if(interests == ""){
+    await User.findByIdAndUpdate(userID,{
+      $push : {interests : interest}
+    })
+    res.status(200).json({message : "Interest added successfully"})
+    return;
+  }
+  interests.map(async val => {
+    if(interest == val){
+      res.status(400).json({message : "You have already added this Category to your Interest"})
+      return;
+    } else {
+      await User.findByIdAndUpdate(userID,{
+        $push : {interests : interest}
+      })
+      res.status(200).json({message : "Interest added successfully"})
+      return;
+    }
+  })
+  
 })

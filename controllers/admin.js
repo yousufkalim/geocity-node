@@ -66,7 +66,7 @@ exports.DeleteUser = asyncHandler(async (req, res, next) => {
 
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
-  await Project.find(function (err, docs) {
+  await Project.find({isDeleted : false},function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -131,6 +131,17 @@ exports.DeleteProject = asyncHandler(async (req, res, next) => {
   res.status(200).send("Project Deleted Successfully");
 });
 
+// Get All Categories //
+exports.getAllCategories = asyncHandler(async (req, res, next) => {
+  await Category.find(function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        categories: docs,
+      });
+  });
+});
+
 // Create Project Category//
 exports.CreateCategory = asyncHandler(async (req, res, next) => {
   const { name, color } = req.body;
@@ -174,6 +185,17 @@ exports.DeleteCategory = asyncHandler(async (req, res, next) => {
     isDeleted: true,
   });
   res.status(200).send("Category Deleted Successfully");
+});
+
+// Get All Skills //
+exports.getAllSkills = asyncHandler(async (req, res, next) => {
+  await Skill.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        skills: docs,
+      });
+  });
 });
 
 // Create Skill //
@@ -235,6 +257,17 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     });
     res.status(200).json({material : material})
   }
+});
+
+// Get All Materials //
+exports.getAllMaterials = asyncHandler(async (req, res, next) => {
+  await Material.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        materials: docs,
+      });
+  });
 });
 
 // Edit Material //

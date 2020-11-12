@@ -111,6 +111,11 @@ const UserSchema = new mongoose.Schema({
     ref: "Material",
     required: false,
   },
+  interests: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Category",
+    required: false,
+  },
   invitation: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Invitation",
@@ -123,7 +128,7 @@ const UserSchema = new mongoose.Schema({
   },
   skills: [
     {
-      skillName: {
+      skillField: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Skill",
       },

@@ -8,8 +8,7 @@ const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
-const { func } = require("joi");
-
+const Skill = require("../models/Skill");
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
   const picture = req.file;
@@ -104,6 +103,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({project : project})
 });
+
 
 //// EDIT PROJECT ////
 
@@ -396,3 +396,50 @@ exports.SearchByCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json(project)  
   }
 })
+
+// Find Collaborators from a Specific Skill Field //
+
+exports.SearchCollaboratorsBySkill = asyncHandler(async (req, res, next) => {
+  
+  const skill = req.body.skill;
+
+  const users = await User.find({"skills.skillField" : {$eq : skill}})
+  if(users == ""){
+    res.status(200).send("No Users found with this Skill name")
+  } else {
+  res.status(200).json(users)  
+  }
+  
+})
+
+// Find Collaborators from a Specific Material //
+
+exports.SearchCollaboratorsByMaterial = asyncHandler(async (req, res, next) => {
+  
+  const material = req.body.material;
+
+  const users = await User.find({material : {$in : material}})
+  if(users == ""){
+    res.status(200).send("No Users found with this Material name")
+  } else {
+  res.status(200).json(users)  
+  }
+  
+})
+
+// Find Collaborators from a Specific Category //
+
+exports.SearchCollaboratorsByCategory = asyncHandler(async (req, res, next) => {
+  const projectID = req.query.id;
+
+  const project = await Project.findById(projectID);
+  const projectCategory = project.category;
+  const users = await User.find({interests : {$in : projectCategory}})
+  if(users == ""){
+    res.status(200).send("No Users found with this type of Category")
+  } else {
+  res.status(200).json(users)  
+  }
+  
+})
+

@@ -21,7 +21,7 @@ exports.register = asyncHandler(async (req, res, next) => {
   // Validation
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(30),
+    skillField: Joi.string().max(30),
     specialization: Joi.string().max(20),
     score: Joi.number().max(5),
   });
