@@ -192,6 +192,17 @@ exports.LikedBy = asyncHandler(async (req, res, next) => {
   res.status(200).json({user : user_name})
 });
 
+//// Total Likes of a Project ////
+exports.totalLikes = asyncHandler(async (req, res, next) => {
+  const projectID = req.query.id;
+  
+  const project = await Project.findById(projectID);
+  const likesArray = project.likedBy;
+  const totalLikes = likesArray.length;
+
+  res.status(200).json({message : "Total number of Likes are :"+totalLikes})
+})
+
 //// Comments ////
 
 exports.comment = asyncHandler(async (req, res, next) => {
@@ -304,56 +315,61 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
         val.contributing_user
       )
     })
+  } else {
+    res.status(403).json({message : "you are not authorized to delete this project"})
+    return;
   }
     if(contributingUsers){
       contributingUsers.map(async function(val){
-        const user = await User.findByIdAndUpdate(val,{
-          $push : {"notifications":{
-            title : "Project Deletion by Project Owner",
-            description: "Project Owner has requested to delete this Project"
-        }}
-      })       
+        val.map( async function(val1){
+          const user = await User.findByIdAndUpdate(val1,{
+            $push : {"notifications":{
+              title : "Project Deletion by Project Owner",
+              description: "Project Owner has requested to delete this Project"
+          }}
+        })
+      })
+               
     })
     const project = await Project.findByIdAndUpdate(projectID, {
       deletionRequestTime: new Date()
     })
-  }
-  
-    else {
+    res.status(200).json({message : "Deletion Request sent to the Collaborators Successfully"})
+    return;
+  } else {
       const project = await Project.findByIdAndUpdate(projectID,{
         isDeleted : true
       })
     }
    
-    res.send(contributingUsers) 
+    res.status(200).json({message : "Project Deleted Successfully"})
 
-  // }else {
-  //   res.status(403).send("you are not authorized to delete this project")
-  // }
 })
 
 
-// By City Name //
+// Collaborator Decision to Delete Project //
 exports.takeDecision = asyncHandler(async (req, res, next) => {
   const decision = req.body.decision;
   const projectID = req.query.id;
-  
+
   if(!decision || typeof decision !== "boolean"){
-    // send error 401;
-  }
-  const project = await Project.findById(projectID);
-  if(project.isDeleted) {
-    res.status(400).json({message:"Already deleted"})
+    res.status(403).json({message : "Please Specify your answer properly"})
     return;
+  }else{
+    const project = await Project.findById(projectID);
+    if(project.isDeleted) {
+      res.status(400).json({message:"Already deleted"})
+      return;
+    }
+    // true = yes delete, false = no delete
+    project.isDeleted = decision ? true : false;
+    project.contributingUsers_decision.push({
+      id: req.user._id,
+      decision
+    })
+    await project.save();
+    res.status(200).json({message : "Project Deleted Successfully"})
   }
-  // true = yes delete, false = no delete
-  project.isDeleted = decision ? true : false;
-  project.contributingUsers_decision.push({
-    id: req.user._id,
-    decision
-  })
-  await project.save();
-  res.status(200).json("done")
 
 })
 

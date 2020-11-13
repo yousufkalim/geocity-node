@@ -23,6 +23,7 @@ const {
   takeDecision,
   ViewProject,
   LikedBy,
+  totalLikes,
   comment,
   RequestToView,
   InviteUser,
@@ -77,6 +78,9 @@ router.get("/view-project", protect, ViewProject);
 
 //// LikedBy Route ////
 router.post("/view-project/likedBy", protect, LikedBy);
+
+//// Total number of Likes Route ////
+router.get("/totalLikes", protect, totalLikes);
 
 //// Comments Route ////
 router.post("/view-project/comment", protect, comment);
