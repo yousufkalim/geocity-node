@@ -40,7 +40,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     zipCode: Joi.string(),
     latitude: Joi.string(),
     longitude: Joi.string(),
-    stage: Joi.string(),
+    progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
     implementation_steps: services,
@@ -56,7 +56,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const {
     title,
     type,
-    stage,
+    progress,
     general_photo,
     general_description,
     implementation_steps,
@@ -81,7 +81,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     zipCode : req.body.zipCode,
     latitude : req.body.latitude,
     longitude : req.body.longitude,
-    stage: req.body.stage,
+    progress: req.body.progress,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
     implementation_steps: req.body.implementation_steps,
@@ -112,6 +112,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   if (picture) {
     var uploaded_Picture = req.file.filename;
   }
+  
 
   //// Validation ////
 
@@ -135,7 +136,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     zipCode: Joi.string(),
     latitude: Joi.string(),
     longitude: Joi.string(),
-    stage: Joi.string(),
+    progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
     implementation_steps: services,
@@ -152,7 +153,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     city = req.user.city
   }
 
-  //// Updating Implementation Steps Array ////
+  //// Updating and Saving Project In Database ////
 
   const project = await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,
@@ -162,7 +163,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     zipCode : req.body.zipCode,
     latitude : req.body.latitude,
     longitude : req.body.longitude,
-    stage: req.body.stage,
+    progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
     $push: { implementation_steps: req.body.implementation_steps },
@@ -241,6 +242,10 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
     .then(
       await User.findByIdAndUpdate(receiver, {
         $push: { invitation: newInvitation._id },
+         $push : {notifications:{
+          title : "Request to View Project",
+          description: "Someone Requested to view your Project"
+      }}
       })
     );
   res
@@ -250,20 +255,31 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
 //// Invite users to contribute ////
 
 exports.InviteUser = asyncHandler(async (req, res, next) => {
-  const sender = req.user.id;
-  const project = req.query.id;
+  const senderID = req.user.id;
+  const projectID = req.query.id;
   const receiver = req.body.receiver;
   const skill = req.body.skills;
+  const stepID = req.body.step;
+
+  const project = await Project.findById(projectID)
+  const title = project.title;
+
+  const sender = await User.findById(senderID);
+  const sender_name = sender.username
 
   const newInvitation = new Invitation({
-    sender: sender,
+    sender: senderID,
     receiver: receiver,
-    projectID: project,
+    projectID: projectID,
     skillID: skill,
   });
   newInvitation.save().then(
     await User.findByIdAndUpdate(receiver, {
       $push: { invitation: newInvitation._id },
+      $push : {notifications:{
+        title : "You are Invited to Collaborate on " + title,
+        description: sender_name + " Invited you to collaborate on " + title
+    }}
     })
   );
   res.status(200).json({Invitation : newInvitation})
@@ -458,4 +474,36 @@ exports.SearchCollaboratorsByCategory = asyncHandler(async (req, res, next) => {
   }
   
 })
+
+//Project Progress // 
+exports.projectProgress = asyncHandler(async (req, res, next) => {
+  const projectID = req.query.id;
+  const steps_Progress = [];
+  var counts = {};
+  
+  const project = await Project.findById(projectID);
+  const steps = project.implementation_steps;
+  if(steps){
+    steps.map(val => {
+      steps_Progress.push(val.status)
+      })
+      const size = steps_Progress.length;
+    
+      for (var i = 0; i < steps_Progress.length; i++) {
+        var num = steps_Progress[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var completed_Steps = counts["completed"];
+      let result = ((completed_Steps / size)*100) || 0;
+       project.progress = result + "%";
+       await project.save();
+      res.status(200).json({result : result + "%"});
+  } else {
+    project.progress = "0" + "%";
+    await project.save();
+    res.status(200).json({result : "0" + "%"});
+  }
+  
+})
+
 

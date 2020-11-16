@@ -12,13 +12,24 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
-const upload = multer({ storage: storage });
+
+const fileFilter = (req,file,cb) =>{
+  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' ){
+    cb(null,true)
+  }else{
+    cb(null,false)
+  }
+  
+}
+
+const upload = multer({ storage: storage, fileFilter : fileFilter });
 
 //// Controller Functions ////
 
 const {
   createProject,
   editProject,
+  projectProgress,
   deleteProject,
   takeDecision,
   ViewProject,
@@ -54,7 +65,7 @@ const User = require("../models/User");
 router.post(
   "/CreateProject",
   protect,
-  upload.single("profile_picture"),
+  upload.single("general_photo"),
   createProject
 );
 
@@ -63,9 +74,12 @@ router.post(
 router.post(
   "/editProject",
   protect,
-  upload.single("profile_picture"),
+  upload.single("general_photo"),
   editProject
 );
+
+//// Calculate Progress Project ////
+router.post("/project-progress", protect, projectProgress);
 
 //// DELETE Project ////
 router.post("/delete-project", protect, deleteProject);

@@ -98,7 +98,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(40),
     type: Joi.string(),
-    stage: Joi.string(),
+    progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(600),
     implementation_steps: services,
@@ -115,7 +115,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const project = await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,
     type: req.body.type,
-    stage: req.body.stage,
+    progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
     $push: { implementation_steps: req.body.implementation_steps },
