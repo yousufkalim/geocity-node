@@ -7,6 +7,8 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
+const Skill = require("../models/Skill");
+
 
 
 //// View PROFILE ////
@@ -42,6 +44,25 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     skills: services,
     material: Joi.array().max(50).items(Joi.string()),
   });
+   // Check if the skills are in database or not, If Not then saving them in the database//
+  const skills = req.body.skills;
+  skills.map(async val =>{
+    let result = false;
+    var requestedSkill = val.skill;
+    var savedSkillField = await Skill.findById(val.skillField)
+    savedSkillField.skill.map(async val1 => {
+   
+     if(requestedSkill == val1){
+        result = true;
+     }
+   })
+   
+   if(result == false){
+     await Skill.findByIdAndUpdate(val.skillField,{
+       $push : {skill : requestedSkill}
+     })
+   }
+ })
 
   const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
