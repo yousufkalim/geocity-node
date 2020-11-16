@@ -23,7 +23,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
     status: Joi.string(),
-    tradeName: Joi.string(),
+    skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
     description : Joi.string().max(150),
@@ -33,7 +33,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   let services = Joi.array().items(nestedSchema);
 
   const schema = Joi.object().keys({
-    title: Joi.string().min(5).max(20),
+    title: Joi.string().min(5).max(100),
     type: Joi.string(),
     city: Joi.string(),
     address: Joi.string(),
@@ -89,7 +89,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     project_owner: req.user.id,
   });
 
-  project.save(function (err, project) {
+   await project.save(function (err, project) {
     var newProjectId = project._id;
   });
 
@@ -118,7 +118,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
     status: Joi.string(),
-    tradeName: Joi.string(),
+    skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
     description : Joi.string().max(150),
@@ -128,7 +128,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   let services = Joi.array().items(nestedSchema);
 
   const schema = Joi.object().keys({
-    title: Joi.string().min(5).max(40),
+    title: Joi.string().min(5).max(100),
     type: Joi.string(),
     city: Joi.string(),
     address: Joi.string(),
@@ -137,7 +137,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     longitude: Joi.string(),
     stage: Joi.string(),
     general_photo: Joi.string().max(255),
-    general_description: Joi.string().max(600),
+    general_description: Joi.string().max(3000),
     implementation_steps: services,
     category: Joi.string(),
   });
@@ -394,7 +394,7 @@ exports.SearchBySkill = asyncHandler(async (req, res, next) => {
   const skill = req.body.skill;
  
   const project = await Project.find({
-    "implementation_steps.tradeName" : {$eq : skill}
+    "implementation_steps.skillField" : {$eq : skill}
   })
  
     res.status(200).json(project)

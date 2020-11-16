@@ -132,6 +132,10 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Skill",
       },
+      skill : {
+        type : String,
+        required : false
+      },
       specialization: {
         type: String,
         required: false,

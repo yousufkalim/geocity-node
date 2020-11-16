@@ -30,7 +30,7 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
   }
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    skillField: Joi.string().max(20),
     specialization: Joi.string().max(20),
     score: Joi.number().max(20),
   });
@@ -87,7 +87,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
     status: Joi.string(),
-    tradeName: Joi.string(),
+    skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
     contributing_user: Joi.array().items(Joi.string()),
@@ -204,13 +204,13 @@ exports.CreateSkill = asyncHandler(async (req, res, next) => {
 
   //// Check If Skill exists with this name or not ////
 
-  const result = await Skill.findOne({ tradeName: name });
+  const result = await Skill.findOne({ skillField: name });
   if (result) {
     res.status(400).send("Skill name already exists");
   } else {
     // Saving Skill in DataBase
     const skill = await Skill.create({
-      tradeName: req.body.name,
+      skillField: req.body.name,
     });
     res.status(200).json({skill : skill});
   }
@@ -222,12 +222,12 @@ exports.EditSkill = asyncHandler(async (req, res, next) => {
 
   //// Check If Category exists with this name or not ////
 
-  const result = await Skill.findOne({ tradeName: name });
+  const result = await Skill.findOne({ skillField: name });
   if (result) {
     res.status(400).send("Skill name already exists");
   } else {
    const skill = await Skill.findByIdAndUpdate(req.query.id, {
-      tradeName: req.body.name,
+      skillField: req.body.name,
     });
     res.status(200).json({skill : skill})
   }

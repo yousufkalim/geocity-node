@@ -6,7 +6,7 @@ const ImpStepSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  tradeName: {
+  skillField: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Skill",
   },
