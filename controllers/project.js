@@ -270,13 +270,13 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
 
 exports.deleteContributor = asyncHandler(async (req, res, next) => {
 
-  const projectID = req.query.id,
-  const step_Id = req.body.step_Id,
-  const user = req.body.user_id,
+  // const projectID = req.query.id,
+  // const step_Id = req.body.step_Id,
+  // const user = req.body.user_id,
 
-  const project = await Project.findByIdAndUpdate(projectID,{
+  // const project = await Project.findByIdAndUpdate(projectID,{
     
-  })
+  // })
 
 
 
