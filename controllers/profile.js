@@ -6,6 +6,9 @@ const Joi = require("joi");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
+const Project = require("../models/Project");
+const Skill = require("../models/Skill");
+
 
 
 //// View PROFILE ////
@@ -27,7 +30,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
   }
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    skillField: Joi.string().max(30),
     specialization: Joi.string().max(20),
     score: Joi.number().max(20),
   });
@@ -39,16 +42,35 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
     skills: services,
-    material: Joi.array().items(Joi.string()),
+    material: Joi.array().max(50).items(Joi.string()),
   });
+   // Check if the skills are in database or not, If Not then saving them in the database//
+  const skills = req.body.skills;
+  skills.map(async val =>{
+    let result = false;
+    var requestedSkill = val.skill;
+    var savedSkillField = await Skill.findById(val.skillField)
+    savedSkillField.skill.map(async val1 => {
+   
+     if(requestedSkill == val1){
+        result = true;
+     }
+   })
+   
+   if(result == false){
+     await Skill.findByIdAndUpdate(val.skillField,{
+       $push : {skill : requestedSkill}
+     })
+   }
+ })
 
   const user = await User.findByIdAndUpdate(req.query.id, {
     username: req.body.username,
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
+    city: req.body.city,
+    address: req.body.address,
+    zipCode: req.body.zipCode,
+    latitude: req.body.latitude,
+    longitude: req.body.longitude,
     profile_description: req.body.profile_description,
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
@@ -80,3 +102,55 @@ exports.comment = asyncHandler(async (req, res, next) => {
   });
   res.status(200).json({user : user_name , comment : comment})
 });
+
+// Get List of projects where User is Project Owner //
+exports.ownedProjects = asyncHandler(async (req, res, next) => {
+  let owned_projects = [];
+  let contributing_projects = [];
+  const userId = req.user.id;
+  const user = await User.findById(userId);
+  if(user.isProjectOwner == true){
+    await Promise.all(user.projects.map(async function(val){
+      const project = await Project.findById(val);
+      
+      if(project.project_owner == userId){
+        owned_projects.push(val)
+      }else{
+        contributing_projects.push(val)
+      }
+    }))
+  }else{
+    contributing_projects.push(user.projects)
+  }
+
+  res.status(200).json({ownedProjects : owned_projects, contributingProjects : contributing_projects})
+})
+
+// Indicating what type of Projects User is interested In //
+exports.Interests = asyncHandler(async (req, res, next) => {
+  const userID  = req.user.id;
+  const interest = req.body.interest;
+
+  const user = await User.findById(userID);
+  const interests = user.interests;
+  if(interests == ""){
+    await User.findByIdAndUpdate(userID,{
+      $push : {interests : interest}
+    })
+    res.status(200).json({message : "Interest added successfully"})
+    return;
+  }
+  interests.map(async val => {
+    if(interest == val){
+      res.status(400).json({message : "You have already added this Category to your Interest"})
+      return;
+    } else {
+      await User.findByIdAndUpdate(userID,{
+        $push : {interests : interest}
+      })
+      res.status(200).json({message : "Interest added successfully"})
+      return;
+    }
+  })
+  
+})

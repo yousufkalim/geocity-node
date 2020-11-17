@@ -1,10 +1,25 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { ref } = require("joi");
+
+
+const ProjectDecision = new mongoose.Schema({
+  name: {
+    type: String,
+    required: false,
+  },
+  contributer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+
+});
+
+module.exports = mongoose.model("Decision", ProjectDecision);
+
+
 
 // USERS SCHEMA
-
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -70,6 +85,12 @@ const UserSchema = new mongoose.Schema({
       required : false
     }
   }],
+  notifications: [
+    {
+      title : String,
+      description : String
+    },
+  ],
   availability: {
     type: String,
     required: false,
@@ -90,6 +111,11 @@ const UserSchema = new mongoose.Schema({
     ref: "Material",
     required: false,
   },
+  interests: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Category",
+    required: false,
+  },
   invitation: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Invitation",
@@ -102,9 +128,13 @@ const UserSchema = new mongoose.Schema({
   },
   skills: [
     {
-      skillName: {
+      skillField: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Skill",
+      },
+      skill : {
+        type : String,
+        required : false
       },
       specialization: {
         type: String,

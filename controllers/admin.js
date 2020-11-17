@@ -30,7 +30,7 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
   }
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    skillField: Joi.string().max(20),
     specialization: Joi.string().max(20),
     score: Joi.number().max(20),
   });
@@ -66,7 +66,7 @@ exports.DeleteUser = asyncHandler(async (req, res, next) => {
 
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
-  await Project.find(function (err, docs) {
+  await Project.find({isDeleted : false},function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -87,7 +87,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
     status: Joi.string(),
-    tradeName: Joi.string(),
+    skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
     contributing_user: Joi.array().items(Joi.string()),
@@ -98,7 +98,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(40),
     type: Joi.string(),
-    stage: Joi.string(),
+    progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(600),
     implementation_steps: services,
@@ -115,7 +115,7 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   const project = await Project.findByIdAndUpdate(req.query.id, {
     title: req.body.title,
     type: req.body.type,
-    stage: req.body.stage,
+    progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
     $push: { implementation_steps: req.body.implementation_steps },
@@ -129,6 +129,17 @@ exports.DeleteProject = asyncHandler(async (req, res, next) => {
     isDeleted: true,
   });
   res.status(200).send("Project Deleted Successfully");
+});
+
+// Get All Categories //
+exports.getAllCategories = asyncHandler(async (req, res, next) => {
+  await Category.find(function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        categories: docs,
+      });
+  });
 });
 
 // Create Project Category//
@@ -176,19 +187,30 @@ exports.DeleteCategory = asyncHandler(async (req, res, next) => {
   res.status(200).send("Category Deleted Successfully");
 });
 
+// Get All Skills //
+exports.getAllSkills = asyncHandler(async (req, res, next) => {
+  await Skill.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        skills: docs,
+      });
+  });
+});
+
 // Create Skill //
 exports.CreateSkill = asyncHandler(async (req, res, next) => {
   const { name } = req.body;
 
   //// Check If Skill exists with this name or not ////
 
-  const result = await Skill.findOne({ tradeName: name });
+  const result = await Skill.findOne({ skillField: name });
   if (result) {
     res.status(400).send("Skill name already exists");
   } else {
     // Saving Skill in DataBase
     const skill = await Skill.create({
-      tradeName: req.body.name,
+      skillField: req.body.name,
     });
     res.status(200).json({skill : skill});
   }
@@ -200,12 +222,12 @@ exports.EditSkill = asyncHandler(async (req, res, next) => {
 
   //// Check If Category exists with this name or not ////
 
-  const result = await Skill.findOne({ tradeName: name });
+  const result = await Skill.findOne({ skillField: name });
   if (result) {
     res.status(400).send("Skill name already exists");
   } else {
    const skill = await Skill.findByIdAndUpdate(req.query.id, {
-      tradeName: req.body.name,
+      skillField: req.body.name,
     });
     res.status(200).json({skill : skill})
   }
@@ -235,6 +257,17 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     });
     res.status(200).json({material : material})
   }
+});
+
+// Get All Materials //
+exports.getAllMaterials = asyncHandler(async (req, res, next) => {
+  await Material.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        materials: docs,
+      });
+  });
 });
 
 // Edit Material //

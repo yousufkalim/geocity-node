@@ -6,7 +6,7 @@ const ImpStepSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  tradeName: {
+  skillField: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Skill",
   },
@@ -16,8 +16,8 @@ const ImpStepSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["completed", "ongoing", "nothing"],
-    default: "ongoing",
+    enum: ["completed", "InProgress", "NoProgress"],
+    default: "InProgress",
     required: false,
   },
   material: {
@@ -73,9 +73,8 @@ const ProjectSchema = new mongoose.Schema({
     type : String,
     required : false,
   },
-  stage: {
+  progress: {
     type: String,
-    enum: ["completed", "ongoing", "nothing"],
     default: "ongoing",
     required: false,
   },
@@ -89,6 +88,20 @@ const ProjectSchema = new mongoose.Schema({
   general_description: {
     type: String,
     required: false,
+  },
+  contributingUsers_decision: [
+    {
+      id: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "User"
+      },
+      decision : Boolean,
+      required : false
+    },
+  ],
+  deletionRequestTime: {
+    type : Date,
+    default : Date.now
   },
 
   createdAt: {

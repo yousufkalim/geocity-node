@@ -9,6 +9,7 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Material = require("../models/Material");
+const Skill = require("../models/Skill");
 
 //REGISTER USER API
 
@@ -21,7 +22,8 @@ exports.register = asyncHandler(async (req, res, next) => {
   // Validation
 
   const nestedSchema = Joi.object().keys({
-    tradename: Joi.string().max(20),
+    skillField: Joi.string().max(30),
+    skill : Joi.string(),
     specialization: Joi.string().max(20),
     score: Joi.number().max(5),
   });
@@ -42,7 +44,9 @@ exports.register = asyncHandler(async (req, res, next) => {
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
     skills: services,
-    material: Joi.array().items(Joi.string()),
+    material: Joi.array().max(50).items(Joi.string()),
+    notifications: Joi.array()
+
   });
 
   const results = schema.validate(req.body);
@@ -61,7 +65,32 @@ exports.register = asyncHandler(async (req, res, next) => {
     profile_description,
     skills,
     material,
+    notifications
   } = req.body;
+
+   // Check if the skills are in database or not, If Not then saving them in the database//
+
+    skills.map(async val =>{
+     let result = false;
+     var requestedSkill = val.skill;
+     var savedSkillField = await Skill.findById(val.skillField)
+     savedSkillField.skill.map(async val1 => {
+    
+      if(requestedSkill == val1){
+         result = true;
+      }
+    })
+    
+    if(result == false){
+      await Skill.findByIdAndUpdate(val.skillField,{
+        $push : {skill : requestedSkill}
+      })
+    }
+  })
+     
+     
+
+
   //// Check If Password and Confirm Password are same or not ////
   if (password !== confirm_password) {
     res.status(403).send("Password and Confirm Password are not same");
@@ -84,7 +113,9 @@ exports.register = asyncHandler(async (req, res, next) => {
       profile_description,
       skills,
       material,
+      notifications
     });
+
     res.status(200).json({user : user});
   }
 });
