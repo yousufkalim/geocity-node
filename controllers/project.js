@@ -10,6 +10,7 @@ const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
 const Material = require("../models/Material");
+const { func } = require("joi");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -142,6 +143,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
+    materialName : Joi.string(),
     description : Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
@@ -168,6 +170,25 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     return res.status(400).send(results.error.details[0].message);
   }
 
+   // Check if the Material are in database or not, If Not then saving them in the database//
+   var steps = req.body.implementation_steps;
+   await Promise.all(await steps.map(async val=>{
+    const requestedMaterial = val.materialName
+   
+   if(requestedMaterial){
+    const result = await Material.find({name : requestedMaterial});
+    if(result.length == 0){
+      const newMaterial = new Material({
+        name : requestedMaterial
+      });
+      await newMaterial.save().then(
+        await val.material.push(newMaterial._id)
+      )
+     }
+    
+    }
+   }))
+
   var city = req.body.city;
   if(!city){
     city = req.user.city
@@ -186,7 +207,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
-    $push: { implementation_steps: req.body.implementation_steps },
+   implementation_steps: steps,
   });
   res.status(200).json({project : project})
 });
@@ -279,7 +300,7 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
   const projectID = req.query.id;
   const receiver = req.body.receiver;
   const skill = req.body.skills;
-  const stepID = req.body.step;
+  const stepID = req.body.stepID;
 
   const project = await Project.findById(projectID)
   const title = project.title;
@@ -292,16 +313,20 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
     receiver: receiver,
     projectID: projectID,
     skillID: skill,
+    stepID : stepID
   });
-  newInvitation.save().then(
+  await newInvitation.save().then(
     await User.findByIdAndUpdate(receiver, {
-      $push: { invitation: newInvitation._id },
+    $push : { invitation: newInvitation.id },
+    })
+  ).then(
+    await User.findByIdAndUpdate(receiver,{
       $push : {notifications:{
         title : "You are Invited to Collaborate on " + title,
         description: sender_name + " Invited you to collaborate on " + title
-    }}
+    }},
     })
-  );
+  )
   res.status(200).json({Invitation : newInvitation})
 });
 
@@ -523,6 +548,19 @@ exports.projectProgress = asyncHandler(async (req, res, next) => {
     await project.save();
     res.status(200).json({result : "0" + "%"});
   }
+  
+})
+
+// Accept and Decline Invite by user //
+exports.inviteDecision = asyncHandler(async (req, res, next) => {
+  const decision = req.body.decision;
+  const projectID = req.query.id;
+  const userID = req.user.id;
+  const invitationID = req.body.invitation;
+
+  const user = await User.findById(userID,function(err,docs){
+    docs.invitation
+  });
   
 })
 

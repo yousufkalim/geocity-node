@@ -21,6 +21,11 @@ const InvitationSchema = new mongoose.Schema({
     ref: "Skill",
     required: false,
   },
+  stepID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ImpSteps",
+    required: false,
+  },
 
   status: {
     type: String,
