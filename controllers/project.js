@@ -9,6 +9,8 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
+const Material = require("../models/Material");
+
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
   const picture = req.file;
@@ -26,6 +28,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
+    materialName : Joi.string(),
     description : Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
@@ -59,10 +62,28 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     progress,
     general_photo,
     general_description,
-    implementation_steps,
     category,
     project_owner,
   } = req.body;
+
+     // Check if the Material are in database or not, If Not then saving them in the database//
+     var steps = req.body.implementation_steps;
+     await Promise.all(await steps.map(async val=>{
+      const requestedMaterial = val.materialName
+     
+     if(requestedMaterial){
+      const result = await Material.find({name : requestedMaterial});
+      if(result.length == 0){
+        const newMaterial = new Material({
+          name : requestedMaterial
+        });
+        await newMaterial.save().then(
+          await val.material.push(newMaterial._id)
+        )
+       }
+      
+      }
+     }))
 
   // If project has not assigned City //
 
@@ -70,9 +91,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   if(!city){
     city = req.user.city
   }
-
+ 
   //// Saving Project in DataBase ////
-
   const project = await new Project({
     title: req.body.title,
     type: req.body.type,
@@ -84,7 +104,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     progress: req.body.progress,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
-    implementation_steps: req.body.implementation_steps,
+    implementation_steps: steps,
     category: req.body.category,
     project_owner: req.user.id,
   });

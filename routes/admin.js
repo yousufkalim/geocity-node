@@ -46,7 +46,7 @@ router.post("/edit-project", protect, EditProject);
 // DELETE PROJECTS //
 router.post("/delete-project", protect, DeleteProject);
 
-//// GET ALL PROJECTS ////
+//// GET ALL Categories ////
 router.get("/categoryList", protect, getAllCategories);
 //// Create Project Category ////
 router.post("/create-category", protect, CreateCategory);
