@@ -43,6 +43,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     confirm_password: Joi.string().min(6).max(255),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
+    phone : Joi.string().max(10).pattern(/^[0-9]+$/),
     skills: services,
     material: Joi.array().max(50).items(Joi.string()),
     notifications: Joi.array()
@@ -63,6 +64,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     confirm_password,
     profile_picture,
     profile_description,
+    phone,
     skills,
     material,
     notifications
@@ -88,10 +90,6 @@ exports.register = asyncHandler(async (req, res, next) => {
        }
      })
     }
-    
-     
-     
-
 
   //// Check If Password and Confirm Password are same or not ////
   if (password !== confirm_password) {
@@ -113,6 +111,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       availability,
       profile_picture: uploaded_Picture || "default.png",
       profile_description,
+      phone,
       skills,
       material,
       notifications

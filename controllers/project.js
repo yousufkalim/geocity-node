@@ -70,22 +70,25 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
      // Check if the Material are in database or not, If Not then saving them in the database//
      var steps = req.body.implementation_steps;
-     await Promise.all(await steps.map(async val=>{
-      const requestedMaterial = val.materialName
-     
-     if(requestedMaterial){
-      const result = await Material.find({name : requestedMaterial});
-      if(result.length == 0){
-        const newMaterial = new Material({
-          name : requestedMaterial
-        });
-        await newMaterial.save().then(
-          await val.material.push(newMaterial._id)
-        )
-       }
-      
-      }
-     }))
+     if(steps){
+      await Promise.all(await steps.map(async val=>{
+        const requestedMaterial = val.materialName
+       
+       if(requestedMaterial){
+        const result = await Material.find({name : requestedMaterial});
+        if(result.length == 0){
+          const newMaterial = new Material({
+            name : requestedMaterial
+          });
+          await newMaterial.save().then(
+            await val.material.push(newMaterial._id)
+          )
+         }
+        
+        }
+       }))
+     }
+    
 
   // If project has not assigned City //
 
