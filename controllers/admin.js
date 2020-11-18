@@ -52,7 +52,7 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
     $push: { material: req.body.material },
-  });
+  },{new : true});
   res.status(200).json({user : user})
 });
 
@@ -118,8 +118,8 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
     progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
-    $push: { implementation_steps: req.body.implementation_steps },
-  });
+   implementation_steps: req.body.implementation_steps,
+  },{new : true});
   res.status(200).json({project : project})
 });
 
@@ -174,7 +174,7 @@ exports.EditCategory = asyncHandler(async (req, res, next) => {
     const category = await Category.findByIdAndUpdate(req.query.id, {
       name: req.body.name,
       color: req.body.color,
-    });
+    },{new : true});
     res.status(200).json({category : category})
   }
 });
@@ -198,48 +198,87 @@ exports.getAllSkills = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Create Skill //
-exports.CreateSkill = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
+// Create SkillField //
+exports.CreateSkillField = asyncHandler(async (req, res, next) => {
+  const { skillField } = req.body;
 
   //// Check If Skill exists with this name or not ////
 
-  const result = await Skill.findOne({ skillField: name });
+  const result = await Skill.findOne({ skillField: skillField });
   if (result) {
-    res.status(400).send("Skill name already exists");
+    res.status(400).send("SkillField already exists");
   } else {
     // Saving Skill in DataBase
     const skill = await Skill.create({
-      skillField: req.body.name,
+      skillField: skillField,
     });
-    res.status(200).json({skill : skill});
+    res.status(200).json({skillField : skillField});
   }
 });
 
-// Edit Skill //
-exports.EditSkill = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
+// Edit SkillField //
+exports.EditSkillField = asyncHandler(async (req, res, next) => {
+  const { skillField,skills } = req.body;
 
-  //// Check If Category exists with this name or not ////
-
-  const result = await Skill.findOne({ skillField: name });
-  if (result) {
-    res.status(400).send("Skill name already exists");
-  } else {
-   const skill = await Skill.findByIdAndUpdate(req.query.id, {
-      skillField: req.body.name,
-    });
-    res.status(200).json({skill : skill})
+  const skillFieldID = req.query.id;
+  //// Check If SkillField exists with this name or not ////
+  if(skillField){
+    const result = await Skill.findOne({ skillField: skillField });
+        if (result) {
+          res.status(400).send("SkillField already exists");
+          return;
+        } else {
+        const skill = await Skill.findByIdAndUpdate(req.query.id, {
+            skillField: skillField,
+          },{new : true});
+        }
   }
+    if(skills == undefined){
+      res.status(200).json({message: "SkillField Updated Successfully"})
+      return;
+    } else {
+      const result = await Skill.find({id :skillFieldID, skill : skills});
+      if(result.length == 0){
+        await Skill.findByIdAndUpdate(skillFieldID,{
+          skill : skills
+        })
+        return res.status(200).json({message : "Skill Updated successfully"})
+      } else {
+        res.status(400).json({message : "Skill name Already Exists"})
+      }
+           
+
+    }
+  
 });
 
-// Delete Skill //
-exports.DeleteSkill = asyncHandler(async (req, res, next) => {
+// Delete SkillField //
+exports.DeleteSkillField = asyncHandler(async (req, res, next) => {
   await Skill.findByIdAndUpdate(req.query.id, {
     isDeleted: true,
   });
   res.status(200).send("Skill Deleted Successfully");
 });
+
+// Create Skill //
+exports.CreateSkill = asyncHandler(async (req, res, next) => {
+  const skillFieldID = req.query.id;
+  const skill = req.body.skill;
+
+  const result = await Skill.findOne({
+    $and : [
+    {_id : skillFieldID ,skill : skill}
+    ]
+  });
+  if(result){
+    res.status(403).json({message : "Skill Name already exists"})
+  } else {
+    await Skill.findByIdAndUpdate(skillFieldID,{
+      $push : {skill : skill}
+    })
+    res.status(200).json({message : "Skill added in SkillField Successfully"})
+  }
+})
 
 // Create Material //
 exports.CreateMaterial = asyncHandler(async (req, res, next) => {
@@ -282,7 +321,7 @@ exports.EditMaterial = asyncHandler(async (req, res, next) => {
   } else {
     const material = await Material.findByIdAndUpdate(req.query.id, {
       name: req.body.name,
-    });
+    },{new : true});
     res.status(200).json({material : material})
   }
 });

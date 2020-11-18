@@ -15,9 +15,10 @@ const {
   EditCategory,
   DeleteCategory,
   getAllSkills,
+  CreateSkillField,
   CreateSkill,
-  EditSkill,
-  DeleteSkill,
+  EditSkillField,
+  DeleteSkillField,
   getAllMaterials,
   CreateMaterial,
   EditMaterial,
@@ -57,12 +58,15 @@ router.post("/delete-category", protect, DeleteCategory);
 
 //// GET ALL Skills ////
 router.get("/skillList", protect, getAllSkills);
+// Create SkillField Route //
+router.post("/create-skillField", protect, CreateSkillField);
+// EDIT SkillField CATEGORY //
+router.post("/edit-skillField", protect, EditSkillField);
+// DELETE PROJECTS CATEGORY //
+router.post("/delete-skillField", protect, DeleteSkillField);
+
 // Create Skills Route //
 router.post("/create-skill", protect, CreateSkill);
-// EDIT PROJECTS CATEGORY //
-router.post("/edit-skill", protect, EditSkill);
-// DELETE PROJECTS CATEGORY //
-router.post("/delete-skill", protect, DeleteSkill);
 
 //// GET ALL Materials ////
 router.get("/materialList", protect, getAllMaterials);

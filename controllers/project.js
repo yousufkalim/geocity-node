@@ -11,6 +11,7 @@ const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
 const Material = require("../models/Material");
 const { func } = require("joi");
+const { findByIdAndUpdate } = require("../models/User");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -342,6 +343,10 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
     if(!result){
       console.log(err);
     } else {
+    const title = result.title;
+    const projectOwnerID = result.project_owner;
+    const projectOwner = await User.findById(projectOwnerID)
+    const ownerName = projectOwner.username;
     const steps = result.implementation_steps;
     let stepIndex;
     steps.map((val,index) => {
@@ -355,7 +360,14 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
         steps[stepIndex].contributing_user.splice(index, 1);
       }
       result.implementation_steps= steps;
-      const newResult = await result.save()
+      const newResult = await result.save().then(
+        await User.findByIdAndUpdate(user,{
+          $push : {notifications:{
+            title : "You have been removed from " + title,
+            description: ownerName + " removed you from " + title
+        }},
+        })
+      )
     }
   res.status(200).send("Removed this user successfully")
 })
