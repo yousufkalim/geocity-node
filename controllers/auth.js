@@ -69,24 +69,26 @@ exports.register = asyncHandler(async (req, res, next) => {
   } = req.body;
 
    // Check if the skills are in database or not, If Not then saving them in the database//
-
-    skills.map(async val =>{
-     let result = false;
-     var requestedSkill = val.skill;
-     var savedSkillField = await Skill.findById(val.skillField)
-     savedSkillField.skill.map(async val1 => {
-    
-      if(requestedSkill == val1){
-         result = true;
-      }
-    })
-    
-    if(result == false){
-      await Skill.findByIdAndUpdate(val.skillField,{
-        $push : {skill : requestedSkill}
-      })
+    if(skills){
+      skills.map(async val =>{
+        let result = false;
+        var requestedSkill = val.skill;
+        var savedSkillField = await Skill.findById(val.skillField)
+        savedSkillField.skill.map(async val1 => {
+       
+         if(requestedSkill == val1){
+            result = true;
+         }
+       })
+       
+       if(result == false){
+         await Skill.findByIdAndUpdate(val.skillField,{
+           $push : {skill : requestedSkill}
+         })
+       }
+     })
     }
-  })
+    
      
      
 
