@@ -9,6 +9,10 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
+const Material = require("../models/Material");
+const { func } = require("joi");
+const { findByIdAndUpdate } = require("../models/User");
+
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
   const picture = req.file;
@@ -63,6 +67,28 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     category,
     project_owner,
   } = req.body;
+
+     // Check if the Material are in database or not, If Not then saving them in the database//
+     var steps = req.body.implementation_steps;
+     if(steps){
+      await Promise.all(await steps.map(async val=>{
+        const requestedMaterial = val.materialName
+       
+       if(requestedMaterial){
+        const result = await Material.find({name : requestedMaterial});
+        if(result.length == 0){
+          const newMaterial = new Material({
+            name : requestedMaterial
+          });
+          await newMaterial.save().then(
+            await val.material.push(newMaterial._id)
+          )
+         }
+        
+        }
+       }))
+     }
+    
 
   // If project has not assigned City //
 
@@ -297,6 +323,10 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
     if(!result){
       console.log(err);
     } else {
+    const title = result.title;
+    const projectOwnerID = result.project_owner;
+    const projectOwner = await User.findById(projectOwnerID)
+    const ownerName = projectOwner.username;
     const steps = result.implementation_steps;
     let stepIndex;
     steps.map((val,index) => {
@@ -310,7 +340,14 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
         steps[stepIndex].contributing_user.splice(index, 1);
       }
       result.implementation_steps= steps;
-      const newResult = await result.save()
+      const newResult = await result.save().then(
+        await User.findByIdAndUpdate(user,{
+          $push : {notifications:{
+            title : "You have been removed from " + title,
+            description: ownerName + " removed you from " + title
+        }},
+        })
+      )
     }
   res.status(200).send("Removed this user successfully")
 })

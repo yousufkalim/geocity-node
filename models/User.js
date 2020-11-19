@@ -58,6 +58,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  phone :{
+    type : Number,
+    required : false
+  },
   isProjectOwner: {
     type: Boolean,
     required: false,

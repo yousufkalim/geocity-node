@@ -41,6 +41,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     city: Joi.string().max(20),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
+    phone : Joi.string().max(10).pattern(/^[0-9]+$/),
     skills: services,
     material: Joi.array().max(50).items(Joi.string()),
   });
@@ -72,10 +73,11 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     latitude: req.body.latitude,
     longitude: req.body.longitude,
     profile_description: req.body.profile_description,
+    phone : req.body.phone,
     profile_picture: uploaded_Picture || "default.png",
     skills: req.body.skills,
-    $push: { material: req.body.material },
-  });
+    material: req.body.material,
+  },{new : true});
   res.status(200).json({user : user})
 });
 
