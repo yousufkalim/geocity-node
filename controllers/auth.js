@@ -23,7 +23,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   const nestedSchema = Joi.object().keys({
     skillField: Joi.string().max(30),
-    skill : Joi.string(),
+    skill: Joi.string(),
     specialization: Joi.string().max(20),
     score: Joi.number().max(5),
   });
@@ -37,17 +37,18 @@ exports.register = asyncHandler(async (req, res, next) => {
     address: Joi.string(),
     zipCode: Joi.string(),
     latitude: Joi.string(),
-    longitude: Joi.string(),    
+    longitude: Joi.string(),
     password: Joi.string().min(6).max(255),
     availability: Joi.string().min(6).max(255),
     confirm_password: Joi.string().min(6).max(255),
     profile_picture: Joi.string().max(255),
     profile_description: Joi.string().max(600),
-    phone : Joi.string().max(10).pattern(/^[0-9]+$/),
+    phone: Joi.string()
+      .max(10)
+      .pattern(/^[0-9]+$/),
     skills: services,
     material: Joi.array().max(50).items(Joi.string()),
-    notifications: Joi.array()
-
+    notifications: Joi.array(),
   });
 
   const results = schema.validate(req.body);
@@ -67,29 +68,28 @@ exports.register = asyncHandler(async (req, res, next) => {
     phone,
     skills,
     material,
-    notifications
+    notifications,
   } = req.body;
 
-   // Check if the skills are in database or not, If Not then saving them in the database//
-    if(skills){
-      skills.map(async val =>{
-        let result = false;
-        var requestedSkill = val.skill;
-        var savedSkillField = await Skill.findById(val.skillField)
-        savedSkillField.skill.map(async val1 => {
-       
-         if(requestedSkill == val1){
-            result = true;
-         }
-       })
-       
-       if(result == false){
-         await Skill.findByIdAndUpdate(val.skillField,{
-           $push : {skill : requestedSkill}
-         })
-       }
-     })
-    }
+  // Check if the skills are in database or not, If Not then saving them in the database//
+  if (skills) {
+    skills.map(async (val) => {
+      let result = false;
+      var requestedSkill = val.skill;
+      var savedSkillField = await Skill.findById(val.skillField);
+      savedSkillField.skill.map(async (val1) => {
+        if (requestedSkill == val1) {
+          result = true;
+        }
+      });
+
+      if (result == false) {
+        await Skill.findByIdAndUpdate(val.skillField, {
+          $push: { skill: requestedSkill },
+        });
+      }
+    });
+  }
 
   //// Check If Password and Confirm Password are same or not ////
   if (password !== confirm_password) {
@@ -114,10 +114,10 @@ exports.register = asyncHandler(async (req, res, next) => {
       phone,
       skills,
       material,
-      notifications
+      notifications,
     });
 
-    res.status(200).json({user : user});
+    res.status(200).json({ user: user });
   }
 });
 
@@ -178,7 +178,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     res
       .status(statusCode)
       .cookie("token", token, options)
-      .json({token : token});
+      .json({ token: token });
   } else {
     res.send("Something went wrong");
   }

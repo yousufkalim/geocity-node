@@ -192,8 +192,8 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     progress: req.body.progress,
     general_description: req.body.general_description,
     general_photo: uploaded_Picture || "default.png",
-    $push: { implementation_steps: req.body.implementation_steps },
-  });
+   implementation_steps: steps,
+  },{new : true});
   res.status(200).json({project : project})
 });
 
@@ -404,8 +404,7 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
 exports.takeDecision = asyncHandler(async (req, res, next) => {
   const decision = req.body.decision;
   const projectID = req.query.id;
-
-  if(!decision || typeof decision !== "boolean"){
+  if(decision == null || decision == undefined || typeof decision !== "boolean"){
     res.status(403).json({message : "Please Specify your answer properly"})
     return;
   }else{
@@ -414,14 +413,19 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
       res.status(400).json({message:"Already deleted"})
       return;
     }
+    
     // true = yes delete, false = no delete
     project.isDeleted = decision ? true : false;
     project.contributingUsers_decision.push({
       id: req.user._id,
       decision
     })
-    await project.save();
-    res.status(200).json({message : "Project Deleted Successfully"})
+    await project.save().then(
+      project.isDeleted ? 
+      res.status(200).json({message : "Project Deleted Successfully"}) : 
+      res.status(200).json({message : "Your Response Submitted- Project Cannot be Deleted"})
+    )
+    
   }
 
 })

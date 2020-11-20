@@ -11,10 +11,11 @@ const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 var cors = require('cors')
 const app = express();
+require("./jobs/agenda")
 
 //// Body Parser Middleware ////
-app.use(cors())
 app.use(bodyParser.json());
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //// Cookie Parser ////
