@@ -45,15 +45,19 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     material: Joi.array().items(Joi.string()),
   });
 
-  const user = await User.findByIdAndUpdate(req.query.id, {
-    username: req.body.username,
-    city: req.body.city,
-    profile_description: req.body.profile_description,
-    profile_picture: uploaded_Picture || "default.png",
-    skills: req.body.skills,
-    $push: { material: req.body.material },
-  },{new : true});
-  res.status(200).json({user : user})
+  const user = await User.findByIdAndUpdate(
+    req.query.id,
+    {
+      username: req.body.username,
+      city: req.body.city,
+      profile_description: req.body.profile_description,
+      profile_picture: uploaded_Picture || "default.png",
+      skills: req.body.skills,
+      $push: { material: req.body.material },
+    },
+    { new: true }
+  );
+  res.status(200).json({ user: user });
 });
 
 // DELETE USERS //
@@ -66,7 +70,7 @@ exports.DeleteUser = asyncHandler(async (req, res, next) => {
 
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
-  await Project.find({isDeleted : false},function (err, docs) {
+  await Project.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -112,15 +116,19 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
 
   //// Updating Implementation Steps Array ////
 
-  const project = await Project.findByIdAndUpdate(req.query.id, {
-    title: req.body.title,
-    type: req.body.type,
-    progress: req.body.progress,
-    general_description: req.body.general_description,
-    general_photo: uploaded_Picture || "default.png",
-   implementation_steps: req.body.implementation_steps,
-  },{new : true});
-  res.status(200).json({project : project})
+  const project = await Project.findByIdAndUpdate(
+    req.query.id,
+    {
+      title: req.body.title,
+      type: req.body.type,
+      progress: req.body.progress,
+      general_description: req.body.general_description,
+      general_photo: uploaded_Picture || "default.png",
+      implementation_steps: req.body.implementation_steps,
+    },
+    { new: true }
+  );
+  res.status(200).json({ project: project });
 });
 
 // DELETE PROJECTS //
@@ -157,7 +165,7 @@ exports.CreateCategory = asyncHandler(async (req, res, next) => {
       name,
       color,
     });
-    res.status(200).json({category : category})
+    res.status(200).json({ category: category });
   }
 });
 
@@ -171,11 +179,15 @@ exports.EditCategory = asyncHandler(async (req, res, next) => {
   if (result) {
     res.status(400).send("Category name already exists");
   } else {
-    const category = await Category.findByIdAndUpdate(req.query.id, {
-      name: req.body.name,
-      color: req.body.color,
-    },{new : true});
-    res.status(200).json({category : category})
+    const category = await Category.findByIdAndUpdate(
+      req.query.id,
+      {
+        name: req.body.name,
+        color: req.body.color,
+      },
+      { new: true }
+    );
+    res.status(200).json({ category: category });
   }
 });
 
@@ -189,7 +201,7 @@ exports.DeleteCategory = asyncHandler(async (req, res, next) => {
 
 // Get All Skills //
 exports.getAllSkills = asyncHandler(async (req, res, next) => {
-  await Skill.find({isDeleted : false},function (err, docs) {
+  await Skill.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -212,44 +224,45 @@ exports.CreateSkillField = asyncHandler(async (req, res, next) => {
     const skill = await Skill.create({
       skillField: skillField,
     });
-    res.status(200).json({skillField : skillField});
+    res.status(200).json({ skillField: skillField });
   }
 });
 
 // Edit SkillField //
 exports.EditSkillField = asyncHandler(async (req, res, next) => {
-  const { skillField,skills } = req.body;
+  const { skillField, skills } = req.body;
 
   const skillFieldID = req.query.id;
   //// Check If SkillField exists with this name or not ////
-  if(skillField){
+  if (skillField) {
     const result = await Skill.findOne({ skillField: skillField });
-        if (result) {
-          res.status(400).send("SkillField already exists");
-          return;
-        } else {
-        const skill = await Skill.findByIdAndUpdate(req.query.id, {
-            skillField: skillField,
-          },{new : true});
-        }
-  }
-    if(skills == undefined){
-      res.status(200).json({message: "SkillField Updated Successfully"})
+    if (result) {
+      res.status(400).send("SkillField already exists");
       return;
     } else {
-      const result = await Skill.find({id :skillFieldID, skill : skills});
-      if(result.length == 0){
-        await Skill.findByIdAndUpdate(skillFieldID,{
-          skill : skills
-        })
-        return res.status(200).json({message : "Skill Updated successfully"})
-      } else {
-        res.status(400).json({message : "Skill name Already Exists"})
-      }
-           
-
+      const skill = await Skill.findByIdAndUpdate(
+        req.query.id,
+        {
+          skillField: skillField,
+        },
+        { new: true }
+      );
     }
-  
+  }
+  if (skills == undefined) {
+    res.status(200).json({ message: "SkillField Updated Successfully" });
+    return;
+  } else {
+    const result = await Skill.find({ id: skillFieldID, skill: skills });
+    if (result.length == 0) {
+      await Skill.findByIdAndUpdate(skillFieldID, {
+        skill: skills,
+      });
+      return res.status(200).json({ message: "Skill Updated successfully" });
+    } else {
+      res.status(400).json({ message: "Skill name Already Exists" });
+    }
+  }
 });
 
 // Delete SkillField //
@@ -266,19 +279,17 @@ exports.CreateSkill = asyncHandler(async (req, res, next) => {
   const skill = req.body.skill;
 
   const result = await Skill.findOne({
-    $and : [
-    {_id : skillFieldID ,skill : skill}
-    ]
+    $and: [{ _id: skillFieldID, skill: skill }],
   });
-  if(result){
-    res.status(403).json({message : "Skill Name already exists"})
+  if (result) {
+    res.status(403).json({ message: "Skill Name already exists" });
   } else {
-    await Skill.findByIdAndUpdate(skillFieldID,{
-      $push : {skill : skill}
-    })
-    res.status(200).json({message : "Skill added in SkillField Successfully"})
+    await Skill.findByIdAndUpdate(skillFieldID, {
+      $push: { skill: skill },
+    });
+    res.status(200).json({ message: "Skill added in SkillField Successfully" });
   }
-})
+});
 
 // Create Material //
 exports.CreateMaterial = asyncHandler(async (req, res, next) => {
@@ -294,13 +305,13 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     const material = await Material.create({
       name: req.body.name,
     });
-    res.status(200).json({material : material})
+    res.status(200).json({ material: material });
   }
 });
 
 // Get All Materials //
 exports.getAllMaterials = asyncHandler(async (req, res, next) => {
-  await Material.find({isDeleted : false},function (err, docs) {
+  await Material.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -319,10 +330,14 @@ exports.EditMaterial = asyncHandler(async (req, res, next) => {
   if (result) {
     res.status(400).send("Material name already exists");
   } else {
-    const material = await Material.findByIdAndUpdate(req.query.id, {
-      name: req.body.name,
-    },{new : true});
-    res.status(200).json({material : material})
+    const material = await Material.findByIdAndUpdate(
+      req.query.id,
+      {
+        name: req.body.name,
+      },
+      { new: true }
+    );
+    res.status(200).json({ material: material });
   }
 });
 
