@@ -192,3 +192,25 @@ exports.logout = asyncHandler(async (req, res, next) => {
     res.status(200).send("Logged out successfully");
   });
 });
+
+// get All SKILLS
+exports.SkillList = asyncHandler(async (req, res, next) => {
+  await Skill.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        skills: docs,
+      });
+  });
+});
+
+// Get All Materials //
+exports.MaterialList = asyncHandler(async (req, res, next) => {
+  await Material.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        materials: docs,
+      });
+  });
+});
