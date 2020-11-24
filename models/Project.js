@@ -6,25 +6,35 @@ const ImpStepSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  skillField: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Skill",
+  skills :{
+    skillField: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Skill",
+      required: false,
+    },
+    skill : {
+      name  : String,
+      required: false,
+    },
+    speciality: {
+      type: String,
+      required: false,
+    },
   },
-  speciality: {
-    type: String,
+
+  material: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Material",
     required: false,
   },
+
   status: {
     type: String,
     enum: ["completed", "InProgress", "NoProgress"],
     default: "InProgress",
     required: false,
   },
-  material: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Material",
-    required: false,
-  },
+  
   description : {
     type : String,
     required : false
@@ -35,6 +45,7 @@ const ImpStepSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  required : false
 });
 
 module.exports = mongoose.model("ImpSteps", ImpStepSchema);
@@ -53,26 +64,30 @@ const ProjectSchema = new mongoose.Schema({
     default: "Public",
     required: false,
   },
-  city : {
-    type : String,
-    required : false,
+  address:{
+    city : {
+      type : String,
+      required : false,
+    },
+    street : {
+      type : String,
+      required : false
+    },
+    zipCode : {
+      type : String,
+      required : false,
+    },
+    latitude : {
+      type : String,
+      required : false,
+    },
+    longitude : {
+      type : String,
+      required : false,
+    },
+    required : false
   },
-  address : {
-    type : String,
-    required : false,
-  },
-  zipCode : {
-    type : String,
-    required : false,
-  },
-  latitude : {
-    type : String,
-    required : false,
-  },
-  longitude : {
-    type : String,
-    required : false,
-  },
+  
   progress: {
     type: String,
     default: "ongoing",
