@@ -23,12 +23,24 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   //// Validation ////
 
   // validation for implementation steps schema //
+  const skillSchema = Joi.object().keys({
+    skillField: Joi.string(),
+    skill: Joi.string(),
+    speciality: Joi.string().max(20),
+  });
+
+  const addressSchema = Joi.object().keys({
+    city: Joi.string(),
+    street: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
+  });
 
   const nestedSchema = Joi.object().keys({
     name: Joi.string().max(20),
+    skills: skillSchema,
     status: Joi.string(),
-    skillField: Joi.string(),
-    speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
@@ -39,11 +51,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(100),
     type: Joi.string(),
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
+    address: addressSchema,
     progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
@@ -128,6 +136,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   });
 
   res.status(200).json({ project: project });
+  next();
 });
 
 //// EDIT PROJECT ////

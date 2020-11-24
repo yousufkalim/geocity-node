@@ -14,9 +14,10 @@ const app = express();
 require("./jobs/agenda");
 
 //// Body Parser Middleware ////
-app.use(cors());
 
 app.use(bodyParser.json());
+app.use(cors());
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //// Cookie Parser ////
@@ -70,7 +71,7 @@ app.use("/api/v1/admin", admin);
 
 //// Setting Port for Server ////
 
-const PORT = 3000 || process.env.PORT;
+const PORT = 5000 || process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
 });
