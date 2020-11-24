@@ -110,7 +110,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     progress: req.body.progress,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
-    implementation_steps: req.body.implementation_steps,
+    implementation_steps: steps,
     category: req.body.category,
     project_owner: req.user.id,
   });
