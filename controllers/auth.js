@@ -178,7 +178,11 @@ const sendTokenResponse = (user, statusCode, res) => {
     res
       .status(statusCode)
       .cookie("token", token, options)
-      .json({token : token});
+      .json({
+        token : token,
+        user : user
+      
+      });
   } else {
     res.send("Something went wrong");
   }
