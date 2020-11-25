@@ -100,7 +100,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   // If project has not assigned City //
 
-  var city = req.body.city;
+  var city = req.body.address.city;
+  console.log(city);
   if (!city) {
     city = req.user.city;
   }
@@ -122,10 +123,12 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     category: req.body.category,
     project_owner: req.user.id,
   });
-
-  await project.save(function (err, project) {
-    var newProjectId = project._id;
-  });
+  console.log(project.implementation_steps, "implemkkbashashj");
+  console.log(project.project_owner, "project ");
+  // function (err, project) {
+  //   var newProjectId = project._id;
+  // }
+  await project.save();
 
   //// Setting Project Owner Field to TRUE in the DataBase ////
 

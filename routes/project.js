@@ -13,16 +13,19 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (req,file,cb) =>{
-  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' ){
-    cb(null,true)
-  }else{
-    cb(null,false)
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
   }
-  
-}
+};
 
-const upload = multer({ storage: storage, fileFilter : fileFilter });
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 //// Controller Functions ////
 
@@ -44,7 +47,7 @@ const {
   SearchByCategory,
   SearchCollaboratorsBySkill,
   SearchCollaboratorsByMaterial,
-  SearchCollaboratorsByCategory
+  SearchCollaboratorsByCategory,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -106,7 +109,11 @@ router.post("/view-project/send-request", protect, RequestToView);
 router.post("/view-project/send-invite", protect, InviteUser);
 
 //// Delete users to contribute against a single step ////
-router.post("/view-project/delete-contributing-user", protect, deleteContributor);
+router.post(
+  "/view-project/delete-contributing-user",
+  protect,
+  deleteContributor
+);
 
 //// Search Project by City Name ////
 router.get("/search/city", protect, SearchByCity);
@@ -121,9 +128,17 @@ router.get("/search/category", protect, SearchByCategory);
 router.get("/SearchCollaboratorsBySkill", protect, SearchCollaboratorsBySkill);
 
 //// Search Collaborators with Material Name ////
-router.get("/SearchCollaboratorsByMaterial", protect, SearchCollaboratorsByMaterial);
+router.get(
+  "/SearchCollaboratorsByMaterial",
+  protect,
+  SearchCollaboratorsByMaterial
+);
 
 //// Search Collaborators with Category Name ////
-router.get("/SearchCollaboratorsByCategory", protect, SearchCollaboratorsByCategory);
+router.get(
+  "/SearchCollaboratorsByCategory",
+  protect,
+  SearchCollaboratorsByCategory
+);
 
 module.exports = router;

@@ -71,7 +71,7 @@ app.use("/api/v1/admin", admin);
 
 //// Setting Port for Server ////
 
-const PORT = 5000 || process.env.PORT;
+const PORT = 3000 || process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
 });
