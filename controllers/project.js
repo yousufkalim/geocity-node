@@ -100,7 +100,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   // If project has not assigned City //
 
-  var city = req.body.city;
+  var city = req.body.address.city;
+  console.log(city);
   if(!city){
     city = req.user.city
   }

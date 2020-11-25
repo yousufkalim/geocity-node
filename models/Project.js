@@ -13,7 +13,7 @@ const ImpStepSchema = new mongoose.Schema({
       required: false,
     },
     skill : {
-      name  : String,
+      type : String,
       required: false,
     },
     speciality: {
