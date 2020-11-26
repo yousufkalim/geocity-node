@@ -6,14 +6,14 @@ const ImpStepSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  skills :{
+  skills: {
     skillField: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Skill",
       required: false,
     },
-    skill : {
-      type : String,
+    skill: {
+      type: String,
       required: false,
     },
     speciality: {
@@ -34,10 +34,10 @@ const ImpStepSchema = new mongoose.Schema({
     default: "InProgress",
     required: false,
   },
-  
-  description : {
-    type : String,
-    required : false
+
+  description: {
+    type: String,
+    required: false,
   },
   contributing_user: [
     {
@@ -45,7 +45,7 @@ const ImpStepSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
-  required : false
+  required: false,
 });
 
 module.exports = mongoose.model("ImpSteps", ImpStepSchema);
@@ -64,33 +64,33 @@ const ProjectSchema = new mongoose.Schema({
     default: "Public",
     required: false,
   },
-  address:{
-    city : {
-      type : String,
-      required : false,
+  address: {
+    city: {
+      type: String,
+      required: false,
     },
-    street : {
-      type : String,
-      required : false
+    street: {
+      type: String,
+      required: false,
     },
-    zipCode : {
-      type : String,
-      required : false,
+    zipCode: {
+      type: String,
+      required: false,
     },
-    latitude : {
-      type : String,
-      required : false,
+    latitude: {
+      type: String,
+      required: false,
     },
-    longitude : {
-      type : String,
-      required : false,
+    longitude: {
+      type: String,
+      required: false,
     },
-    required : false
+    required: false,
   },
-  
+
   progress: {
     type: String,
-    default: "ongoing",
+    default: "0%",
     required: false,
   },
 
@@ -106,17 +106,17 @@ const ProjectSchema = new mongoose.Schema({
   },
   contributingUsers_decision: [
     {
-      id: { 
+      id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref : "User"
+        ref: "User",
       },
-      decision : Boolean,
-      required : false
+      decision: Boolean,
+      required: false,
     },
   ],
   deletionRequestTime: {
-    type : Date,
-    default : Date.now
+    type: Date,
+    default: Date.now,
   },
 
   createdAt: {
@@ -145,18 +145,20 @@ const ProjectSchema = new mongoose.Schema({
       required: false,
     },
   ],
-  comments : [{
-    user : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : "User",
-      required : false
+  comments: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+
+      comment: {
+        type: String,
+        required: false,
+      },
     },
-    
-    comment : {
-      type : String,
-      required : false
-    }
-  }],
+  ],
   invitation: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Invitation",
