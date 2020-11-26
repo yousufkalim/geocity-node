@@ -8,8 +8,10 @@ const Joi = require("joi");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
+const Project = require("../models/Project");
 const Material = require("../models/Material");
 const Skill = require("../models/Skill");
+const Category = require("../models/Category");
 
 //REGISTER USER API
 
@@ -196,6 +198,37 @@ exports.logout = asyncHandler(async (req, res, next) => {
     res.status(200).send("Logged out successfully");
   });
 });
+
+
+
+// GET ALL PROJECTS //
+exports.ProjectsList = asyncHandler(async (req, res, next) => {
+  let projectsArray = [];
+  const projects = await Project.find({isDeleted : false}).populate("category");
+  if(projects){
+    projects.map(item => {
+      const likes = item.likedBy.length;
+      projectsArray.push({project : item, totalLikes : likes})
+   });
+    res.status(200).json({projects : projectsArray})
+  }
+   else {
+    res.status(200).json({projects : "No projects yet"})
+  }
+
+});
+
+// get All Categories
+exports.CategoryList = asyncHandler(async (req, res, next) => {
+  await Category.find({isDeleted : false},function (err, docs) {
+    if (err) res.json(err);
+    else
+      res.status(200).json({
+        category: docs,
+      });
+  });
+});
+
 
 // get All SKILLS
 exports.SkillList = asyncHandler(async (req, res, next) => {
