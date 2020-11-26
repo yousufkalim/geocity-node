@@ -107,24 +107,34 @@ exports.comment = asyncHandler(async (req, res, next) => {
 
 // Get List of projects where User is Project Owner //
 exports.ownedProjects = asyncHandler(async (req, res, next) => {
-  let owned_projects = [];
-  let contributing_projects = [];
+
+  let owned_projects = []
+  let contributing_projects = []
   const userId = req.user.id;
+
   const user = await User.findById(userId);
+
   if(user.isProjectOwner == true){
+
     await Promise.all(user.projects.map(async function(val){
       const project = await Project.findById(val);
-      
       if(project.project_owner == userId){
-        owned_projects.push(val)
+        owned_projects.push({project})
       }else{
-        contributing_projects.push(val)
+        contributing_projects.push({project})
+        console.log(contributing_projects);
       }
     }))
   }else{
-    contributing_projects.push(user.projects)
-  }
-
+    if(user.projects.length > 0){
+      user.projects.map(async item => {
+        const project = await Project.findById(item);
+        contributing_projects.push({project})
+      })
+    } else {
+      return res.status(200).json({message : "You have no projects yet"})
+    }
+ }s
   res.status(200).json({ownedProjects : owned_projects, contributingProjects : contributing_projects})
 })
 
