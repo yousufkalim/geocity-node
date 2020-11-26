@@ -117,12 +117,11 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
   if(user.isProjectOwner == true){
 
     await Promise.all(user.projects.map(async function(val){
-      const project = await Project.findById(val);
+      const project = await Project.findById(val).populate("category");
       if(project.project_owner == userId){
         owned_projects.push({project})
       }else{
         contributing_projects.push({project})
-        console.log(contributing_projects);
       }
     }))
   }else{
@@ -134,7 +133,7 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
     } else {
       return res.status(200).json({message : "You have no projects yet"})
     }
- }s
+ }
   res.status(200).json({ownedProjects : owned_projects, contributingProjects : contributing_projects})
 })
 
