@@ -90,7 +90,7 @@ const ProjectSchema = new mongoose.Schema({
 
   progress: {
     type: String,
-    default: "ongoing",
+    default: "0%",
     required: false,
   },
 
