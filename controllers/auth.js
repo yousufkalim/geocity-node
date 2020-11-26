@@ -175,10 +175,10 @@ const sendTokenResponse = (user, statusCode, res) => {
     options.secure = true;
   }
   if (user) {
-    res
-      .status(statusCode)
-      .cookie("token", token, options)
-      .json({ token: token });
+    res.status(statusCode).cookie("token", token, options).json({
+      token: token,
+      user: user,
+    });
   } else {
     res.send("Something went wrong");
   }
@@ -195,7 +195,7 @@ exports.logout = asyncHandler(async (req, res, next) => {
 
 // get All SKILLS
 exports.SkillList = asyncHandler(async (req, res, next) => {
-  await Skill.find({isDeleted : false},function (err, docs) {
+  await Skill.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -206,7 +206,7 @@ exports.SkillList = asyncHandler(async (req, res, next) => {
 
 // Get All Materials //
 exports.MaterialList = asyncHandler(async (req, res, next) => {
-  await Material.find({isDeleted : false},function (err, docs) {
+  await Material.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
