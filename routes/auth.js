@@ -14,7 +14,7 @@ const upload = multer({ storage: storage });
 
 //Controller Functions
 
-const { register, login, logout, SkillList, MaterialList } = require("../controllers/auth");
+const { register, login, logout, SkillList, MaterialList, ProjectsList, CategoryList} = require("../controllers/auth");
 const router = express.Router();
 
 //middleware functions
@@ -32,6 +32,9 @@ const User = require("../models/User");
 //Register USER routes
 router.get("/skillList",SkillList);
 router.get("/materialList", MaterialList);
+router.get("/categoryList", CategoryList);
+
+router.get("/projectList", ProjectsList);
 
 router.get("/register", async function (req, res) {});
 router.post("/register", upload.single("profile_picture"), register);
