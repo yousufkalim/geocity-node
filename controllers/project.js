@@ -245,12 +245,34 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 //// View PROJECT ////
 
 exports.ViewProject = asyncHandler(async (req, res, next) => {
-  const project = await Project.findById(req.query.id, function (err, result) {
-    if (err) {
-      console.log(err);
-    }
-    res.status(200).json({ project: result });
-  });
+  try {
+    const populateQuery = [
+      {
+        path: "category",
+        select: ["name", "color"],
+      },
+      {
+        path: "implementation_steps.skills.skillField",
+        select: "skillField",
+      },
+      {
+        path: "implementation_steps.material",
+        select: "name",
+      },
+      {
+        path: "implementation_steps.contributing_user",
+      },
+      {
+        path: "project_owner",
+      },
+    ];
+    const project = await Project.findById(req.query.id).populate(
+      populateQuery
+    );
+    res.status(200).json({ project: project });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 //// LikedBy ////
