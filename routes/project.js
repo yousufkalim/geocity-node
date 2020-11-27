@@ -116,26 +116,26 @@ router.post(
 );
 
 //// Search Project by City Name ////
-router.get("/search/city", protect, SearchByCity);
+router.post("/search/city", protect, SearchByCity);
 
 //// Search Project by Skill Name ////
-router.get("/search/skill", protect, SearchBySkill);
+router.post("/search/skill", protect, SearchBySkill);
 
 //// Search Project by Category Name ////
-router.get("/search/category", protect, SearchByCategory);
+router.post("/search/category", protect, SearchByCategory);
 
 //// Search Collaborators with Skill Name ////
-router.get("/SearchCollaboratorsBySkill", protect, SearchCollaboratorsBySkill);
+router.post("/SearchCollaboratorsBySkill", protect, SearchCollaboratorsBySkill);
 
 //// Search Collaborators with Material Name ////
-router.get(
+router.post(
   "/SearchCollaboratorsByMaterial",
   protect,
   SearchCollaboratorsByMaterial
 );
 
 //// Search Collaborators with Category Name ////
-router.get(
+router.post(
   "/SearchCollaboratorsByCategory",
   protect,
   SearchCollaboratorsByCategory

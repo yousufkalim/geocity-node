@@ -42,6 +42,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     skills: skillSchema,
     status: Joi.string(),
     material: Joi.array().items(Joi.string()),
+    materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
@@ -68,7 +69,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const {
     title,
     type,
-    progress,
     general_photo,
     general_description,
     implementation_steps,
@@ -78,6 +78,9 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 
   // Check if the Material are in database or not, If Not then saving them in the database//
   var steps = req.body.implementation_steps;
+  let progress = "";
+  const steps_Progress = [];
+  var counts = {};
   if (steps) {
     await Promise.all(
       await steps.map(async (val) => {
@@ -93,6 +96,19 @@ exports.createProject = asyncHandler(async (req, res, next) => {
               .save()
               .then(await val.material.push(newMaterial._id));
           }
+        }
+
+        steps_Progress.push(val.status);
+        if (steps_Progress) {
+          const size = steps_Progress.length;
+
+          for (var i = 0; i < steps_Progress.length; i++) {
+            var num = steps_Progress[i];
+            counts[num] = counts[num] ? counts[num] + 1 : 1;
+          }
+          var completed_Steps = counts["completed"];
+          let result = (completed_Steps / size) * 100 || 0;
+          progress = result + "%";
         }
       })
     );
@@ -121,6 +137,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     implementation_steps: steps,
     category: req.body.category,
     project_owner: req.user.id,
+    progress: progress,
   });
 
   await project.save();
@@ -153,6 +170,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     skillField: Joi.string(),
     speciality: Joi.string().max(20),
     material: Joi.array().items(Joi.string()),
+    materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
@@ -178,6 +196,26 @@ exports.editProject = asyncHandler(async (req, res, next) => {
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
+
+  // Check if the Material are in database or not, If Not then saving them in the database//
+  var steps = req.body.implementation_steps;
+  await Promise.all(
+    await steps.map(async (val) => {
+      const requestedMaterial = val.materialName;
+
+      if (requestedMaterial) {
+        const result = await Material.find({ name: requestedMaterial });
+        if (result.length == 0) {
+          const newMaterial = new Material({
+            name: requestedMaterial,
+          });
+          await newMaterial
+            .save()
+            .then(await val.material.push(newMaterial._id));
+        }
+      }
+    })
+  );
 
   var city = req.body.city;
   if (!city) {
@@ -209,6 +247,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 //// View PROJECT ////
 
 exports.ViewProject = asyncHandler(async (req, res, next) => {
+  console.log(req.query);
   const project = await Project.findById(req.query.id, function (err, result) {
     if (err) {
       console.log(err);
@@ -308,18 +347,26 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
     receiver: receiver,
     projectID: projectID,
     skillID: skill,
+    stepID: stepID,
   });
-  newInvitation.save().then(
-    await User.findByIdAndUpdate(receiver, {
-      $push: { invitation: newInvitation._id },
-      $push: {
-        notifications: {
-          title: "You are Invited to Collaborate on " + title,
-          description: sender_name + " Invited you to collaborate on " + title,
+  await newInvitation
+    .save()
+    .then(
+      await User.findByIdAndUpdate(receiver, {
+        $push: { invitation: newInvitation.id },
+      })
+    )
+    .then(
+      await User.findByIdAndUpdate(receiver, {
+        $push: {
+          notifications: {
+            title: "You are Invited to Collaborate on " + title,
+            description:
+              sender_name + " Invited you to collaborate on " + title,
+          },
         },
-      },
-    })
-  );
+      })
+    );
   res.status(200).json({ Invitation: newInvitation });
 });
 
@@ -555,4 +602,16 @@ exports.projectProgress = asyncHandler(async (req, res, next) => {
     await project.save();
     res.status(200).json({ result: "0" + "%" });
   }
+});
+
+// Accept and Decline Invite by user //
+exports.inviteDecision = asyncHandler(async (req, res, next) => {
+  const decision = req.body.decision;
+  const projectID = req.query.id;
+  const userID = req.user.id;
+  const invitationID = req.body.invitation;
+
+  const user = await User.findById(userID, function (err, docs) {
+    docs.invitation;
+  });
 });

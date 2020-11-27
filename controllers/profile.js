@@ -119,12 +119,12 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
   if (user.isProjectOwner == true) {
     await Promise.all(
       user.projects.map(async function (val) {
-        const project = await Project.findById(val).populate("category");
-        const totalLikes = project.likedBy.length;
+        const project = await Project.findById(val);
         if (project.project_owner == userId) {
-          owned_projects.push({ project: project, Likes: totalLikes });
+          owned_projects.push({ project });
         } else {
           contributing_projects.push({ project });
+          console.log(contributing_projects);
         }
       })
     );
