@@ -8,16 +8,37 @@ const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Skill = require("../models/Skill");
+const Category = require("../models/Category");
 
 //// View PROFILE ////
 
 exports.viewProfile = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.query.id, function (err, result) {
-    if (err) {
-      console.log(err);
-    }
-    res.status(200).json({ user: result });
-  });
+  try {
+    const populateQuery = [
+      {
+        path: "projects",
+        populate: {
+          path: "category",
+          select: ["name", "color"],
+        },
+      },
+      {
+        path: "skills.skillField",
+        select: "skillField",
+      },
+      {
+        path: "material",
+        select: "name",
+      },
+      {
+        path: "comments.user",
+      },
+    ];
+    const user = await User.findById(req.query.id).populate(populateQuery);
+    res.status(200).json({ user: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 // Edit profile
@@ -95,17 +116,21 @@ exports.deleteProfile = asyncHandler(async (req, res, next) => {
 //// Comments ////
 
 exports.comment = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  const user_name = user.username;
+  const loggedUser = await User.findById(req.user.id);
+  const userName = loggedUser.username;
   const comment = req.body.comment;
   const newComment = {
-    user: user.id,
+    user: loggedUser.id,
     comment: comment,
   };
-  await User.findByIdAndUpdate(req.query.id, {
-    $push: { comments: newComment },
-  });
-  res.status(200).json({ user: user_name, comment: comment });
+  const user = await User.findByIdAndUpdate(
+    req.query.id,
+    {
+      $push: { comments: newComment },
+    },
+    { new: true }
+  );
+  res.status(200).json({ user: userName, comment: comment, user: user });
 });
 
 // Get List of projects where User is Project Owner //
