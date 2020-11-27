@@ -99,7 +99,7 @@ exports.comment = asyncHandler(async (req, res, next) => {
   const user_name = user.username;
   const comment = req.body.comment;
   const newComment = {
-    user: user,
+    user: user.id,
     comment: comment,
   };
   await User.findByIdAndUpdate(req.query.id, {
