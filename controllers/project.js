@@ -300,17 +300,21 @@ exports.totalLikes = asyncHandler(async (req, res, next) => {
 //// Comments ////
 
 exports.comment = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
-  const user_name = user.username;
-  const comment = req.body.comment;
-  const newComment = {
-    user: user,
-    comment: comment,
-  };
-  await Project.findByIdAndUpdate(req.query.id, {
-    $push: { comments: newComment },
-  });
-  res.status(200).json({ user: user_name, comment: comment });
+  try {
+    const user = await User.findById(req.user.id);
+    const user_name = user.username;
+    const comment = req.body.comment;
+    const newComment = {
+      user: user.id,
+      comment: comment,
+    };
+    await Project.findByIdAndUpdate(req.query.id, {
+      $push: { comments: newComment },
+    });
+    res.status(200).json({ user: user_name, comment: comment });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 //// Request to view a Project ////
