@@ -116,21 +116,25 @@ exports.deleteProfile = asyncHandler(async (req, res, next) => {
 //// Comments ////
 
 exports.comment = asyncHandler(async (req, res, next) => {
-  const loggedUser = await User.findById(req.user.id);
-  const userName = loggedUser.username;
-  const comment = req.body.comment;
-  const newComment = {
-    user: loggedUser.id,
-    comment: comment,
-  };
-  const user = await User.findByIdAndUpdate(
-    req.query.id,
-    {
-      $push: { comments: newComment },
-    },
-    { new: true }
-  );
-  res.status(200).json({ user: userName, comment: comment, user: user });
+  try {
+    const loggedUser = await User.findById(req.user.id);
+    const userName = loggedUser.username;
+    const comment = req.body.comment;
+    const newComment = {
+      user: loggedUser.id,
+      comment: comment,
+    };
+    const user = await User.findByIdAndUpdate(
+      req.query.id,
+      {
+        $push: { comments: newComment },
+      },
+      { new: true }
+    );
+    res.status(200).json({ user: userName, comment: comment, user: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 // Get List of projects where User is Project Owner //
@@ -203,3 +207,6 @@ exports.Interests = asyncHandler(async (req, res, next) => {
     }
   });
 });
+
+// recommend user skills //
+exports.recommendUserSkill = asyncHandler(async (req, res, next) => {});
