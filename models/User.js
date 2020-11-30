@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
 const ProjectDecision = new mongoose.Schema({
   name: {
     type: String,
@@ -12,12 +11,9 @@ const ProjectDecision = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-
 });
 
 module.exports = mongoose.model("Decision", ProjectDecision);
-
-
 
 // USERS SCHEMA
 const UserSchema = new mongoose.Schema({
@@ -29,25 +25,25 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  city : {
-    type : String,
-    required : false,
+  city: {
+    type: String,
+    required: false,
   },
-  address : {
-    type : String,
-    required : false,
+  address: {
+    type: String,
+    required: false,
   },
-  zipCode : {
-    type : String,
-    required : false,
+  zipCode: {
+    type: String,
+    required: false,
   },
-  latitude : {
-    type : String,
-    required : false,
+  latitude: {
+    type: String,
+    required: false,
   },
-  longitude : {
-    type : String,
-    required : false,
+  longitude: {
+    type: String,
+    required: false,
   },
   profile_picture: {
     type: String,
@@ -58,9 +54,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  phone :{
-    type : Number,
-    required : false
+  phone: {
+    type: Number,
+    required: false,
   },
   isProjectOwner: {
     type: Boolean,
@@ -77,22 +73,29 @@ const UserSchema = new mongoose.Schema({
     required: false,
     select: false,
   },
-  comments : [{
-    user : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : "User",
-      required : false
+  comments: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+
+      comment: {
+        type: String,
+        required: false,
+      },
+
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
     },
-    
-    comment : {
-      type : String,
-      required : false
-    }
-  }],
+  ],
   notifications: [
     {
-      title : String,
-      description : String
+      title: String,
+      description: String,
     },
   ],
   availability: {
@@ -110,11 +113,13 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  material: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Material",
-    required: false,
-  },
+  material: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Material",
+      required: false,
+    },
+  ],
   interests: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Category",
@@ -125,20 +130,22 @@ const UserSchema = new mongoose.Schema({
     ref: "Invitation",
     required: false,
   },
-  projects: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Project",
-    required: false,
-  },
+  projects: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      required: false,
+    },
+  ],
   skills: [
     {
       skillField: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Skill",
       },
-      skill : {
-        type : String,
-        required : false
+      skill: {
+        type: String,
+        required: false,
       },
       specialization: {
         type: String,

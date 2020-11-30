@@ -526,7 +526,7 @@ exports.SearchByCity = asyncHandler(async (req, res, next) => {
     const project = await Project.find({
       isDeleted: false,
       "address.city": city,
-    });
+    }).populate("category");
     project.map((item) => {
       const totalLikes = item.likedBy.length;
       filteredArray.push({ project: item, totalLikes: totalLikes });
@@ -554,7 +554,7 @@ exports.SearchBySkill = asyncHandler(async (req, res, next) => {
           "skills.skillField": skill,
         },
       },
-    });
+    }).populate("category");
     project.map((item) => {
       const totalLikes = item.likedBy.length;
       filteredArray.push({ project: item, totalLikes: totalLikes });
@@ -574,7 +574,7 @@ exports.SearchByCategory = asyncHandler(async (req, res, next) => {
   const category = req.body.category;
   const project = await Project.find({
     category: category,
-  });
+  }).populate("category");
   if (project == "") {
     res.status(200).send("No project found with this Category name");
   } else {
