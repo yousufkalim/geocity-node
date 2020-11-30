@@ -135,40 +135,43 @@ exports.comment = asyncHandler(async (req, res, next) => {
 
 // Get List of projects where User is Project Owner //
 exports.ownedProjects = asyncHandler(async (req, res, next) => {
-  let owned_projects = [];
-  let contributing_projects = [];
-  const userId = req.user.id;
+  try {
+    let owned_projects = [];
+    let contributing_projects = [];
+    const userId = req.user.id;
 
-  const user = await User.findById(userId);
+    const user = await User.findById(userId);
 
-  if (user.isProjectOwner == true) {
-    await Promise.all(
-      user.projects.map(async function (val) {
-        const project = await Project.findById(val).populate("category");
-        const totalLikes = project.likedBy.length;
-        console.log(totalLikes);
-        if (project.project_owner == userId) {
-          owned_projects.push({ project });
-        } else {
-          contributing_projects.push({ project });
-          console.log(contributing_projects);
-        }
-      })
-    );
-  } else {
-    if (user.projects.length > 0) {
-      user.projects.map(async (item) => {
-        const project = await Project.findById(item);
-        contributing_projects.push({ project });
-      });
+    if (user.isProjectOwner == true) {
+      await Promise.all(
+        user.projects.map(async function (val) {
+          const project = await Project.findById(val).populate("category");
+          const totalLikes = project.likedBy.length;
+          console.log(totalLikes);
+          if (project.project_owner == userId) {
+            owned_projects.push({ project: project, Likes: totalLikes });
+          } else {
+            contributing_projects.push({ project });
+          }
+        })
+      );
     } else {
-      return res.status(200).json({ message: "You have no projects yet" });
+      if (user.projects.length > 0) {
+        user.projects.map(async (item) => {
+          const project = await Project.findById(item);
+          contributing_projects.push({ project });
+        });
+      } else {
+        return res.status(200).json({ message: "You have no projects yet" });
+      }
     }
+    res.status(200).json({
+      ownedProjects: owned_projects,
+      contributingProjects: contributing_projects,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
-  res.status(200).json({
-    ownedProjects: owned_projects,
-    contributingProjects: contributing_projects,
-  });
 });
 
 // Indicating what type of Projects User is interested In //

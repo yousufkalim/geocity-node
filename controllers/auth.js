@@ -195,28 +195,26 @@ exports.logout = asyncHandler(async (req, res, next) => {
   });
 });
 
-
-
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
   let projectsArray = [];
-  const projects = await Project.find({isDeleted : false}).populate("category");
-  if(projects){
-    projects.map(item => {
+  const projects = await Project.find({ isDeleted: false }).populate(
+    "category"
+  );
+  if (projects) {
+    projects.map((item) => {
       const likes = item.likedBy.length;
-      projectsArray.push({project : item, totalLikes : likes})
-   });
-    res.status(200).json({projects : projectsArray})
+      projectsArray.push({ project: item, totalLikes: likes });
+    });
+    res.status(200).json({ projects: projectsArray });
+  } else {
+    res.status(200).json({ projects: "No projects yet" });
   }
-   else {
-    res.status(200).json({projects : "No projects yet"})
-  }
-
 });
 
 // get All Categories
 exports.CategoryList = asyncHandler(async (req, res, next) => {
-  await Category.find({isDeleted : false},function (err, docs) {
+  await Category.find({ isDeleted: false }, function (err, docs) {
     if (err) res.json(err);
     else
       res.status(200).json({
@@ -224,7 +222,6 @@ exports.CategoryList = asyncHandler(async (req, res, next) => {
       });
   });
 });
-
 
 // get All SKILLS
 exports.SkillList = asyncHandler(async (req, res, next) => {
