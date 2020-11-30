@@ -58,5 +58,6 @@ router.get("/myProjects", protect, ownedProjects);
 router.post("/Project-Interest", protect, Interests);
 
 // Recommend User skill //
+router.post("/view-profile/recommendSkill", protect, recommendUserSkill);
 
 module.exports = router;

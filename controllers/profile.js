@@ -9,6 +9,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Skill = require("../models/Skill");
 const Category = require("../models/Category");
+const { insertMany } = require("../models/User");
 
 //// View PROFILE ////
 
@@ -209,4 +210,25 @@ exports.Interests = asyncHandler(async (req, res, next) => {
 });
 
 // recommend user skills //
-exports.recommendUserSkill = asyncHandler(async (req, res, next) => {});
+exports.recommendUserSkill = asyncHandler(async (req, res, next) => {
+  try {
+    const loggedInUser = await User.findById(req.user.id);
+    const skillField = req.body.skillField;
+
+    const user = await User.findById(req.query.id);
+    let skills = user.skills;
+    let requestedSkill = skills.find((item) => item.skillField == skillField);
+    requestedSkill.recommendedBy.push(req.user.id);
+
+    await User.findByIdAndUpdate(
+      req.query.id,
+      {
+        $set: { skills: skills },
+      },
+      { new: true }
+    );
+    res.status(200).json({ recommendedBy: loggedInUser, recommendedTo: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
