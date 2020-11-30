@@ -247,13 +247,34 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 //// View PROJECT ////
 
 exports.ViewProject = asyncHandler(async (req, res, next) => {
-  console.log(req.query);
-  const project = await Project.findById(req.query.id, function (err, result) {
-    if (err) {
-      console.log(err);
-    }
-    res.status(200).json({ project: result });
-  });
+  try {
+    const populateQuery = [
+      {
+        path: "category",
+        select: ["name", "color"],
+      },
+      {
+        path: "implementation_steps.skills.skillField",
+        select: "skillField",
+      },
+      {
+        path: "implementation_steps.material",
+        select: "name",
+      },
+      {
+        path: "implementation_steps.contributing_user",
+      },
+      {
+        path: "project_owner",
+      },
+    ];
+    const project = await Project.findById(req.query.id).populate(
+      populateQuery
+    );
+    res.status(200).json({ project: project });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 //// LikedBy ////
@@ -499,25 +520,53 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
 
 // By City Name //
 exports.SearchByCity = asyncHandler(async (req, res, next) => {
-  const city = req.body.city;
+  try {
+    const city = req.body.city;
+    const filteredArray = [];
+    const project = await Project.find({
+      isDeleted: false,
+      "address.city": city,
+    });
+    project.map((item) => {
+      const totalLikes = item.likedBy.length;
+      filteredArray.push({ project: item, totalLikes: totalLikes });
+    });
 
-  const project = await Project.find({ city: city });
-  if (project == "") {
-    res.status(200).send("No project found with this City name");
-  } else {
-    res.status(200).json(project);
+    if (project == "") {
+      res.status(200).send("No project found with this City name");
+    } else {
+      res.status(200).json({ projects: filteredArray });
+    }
+  } catch (err) {
+    res.status(404).json({ message: err.message });
   }
 });
 
 // By Skill Name //
 exports.SearchBySkill = asyncHandler(async (req, res, next) => {
-  const skill = req.body.skill;
+  try {
+    const skill = req.body.skill;
+    const filteredArray = [];
 
-  const project = await Project.find({
-    "implementation_steps.skillField": { $eq: skill },
-  });
-
-  res.status(200).json(project);
+    const project = await Project.find({
+      implementation_steps: {
+        $elemMatch: {
+          "skills.skillField": skill,
+        },
+      },
+    });
+    project.map((item) => {
+      const totalLikes = item.likedBy.length;
+      filteredArray.push({ project: item, totalLikes: totalLikes });
+    });
+    if (project == "") {
+      res.status(200).send("No project found with this Skill Field name");
+    } else {
+      res.status(200).json({ projects: filteredArray });
+    }
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
 });
 
 // By Category Name //

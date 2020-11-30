@@ -99,7 +99,7 @@ exports.comment = asyncHandler(async (req, res, next) => {
   const user_name = user.username;
   const comment = req.body.comment;
   const newComment = {
-    user: user,
+    user: user.id,
     comment: comment,
   };
   await User.findByIdAndUpdate(req.query.id, {
@@ -119,7 +119,9 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
   if (user.isProjectOwner == true) {
     await Promise.all(
       user.projects.map(async function (val) {
-        const project = await Project.findById(val);
+        const project = await Project.findById(val).populate("category");
+        const totalLikes = project.likedBy.length;
+        console.log(totalLikes);
         if (project.project_owner == userId) {
           owned_projects.push({ project });
         } else {
