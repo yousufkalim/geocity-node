@@ -303,17 +303,23 @@ exports.totalLikes = asyncHandler(async (req, res, next) => {
 
 exports.comment = asyncHandler(async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const user_name = user.username;
+    const loggedUser = await User.findById(req.user.id);
+    const userName = loggedUser.username;
     const comment = req.body.comment;
     const newComment = {
-      user: user.id,
+      user: loggedUser.id,
       comment: comment,
     };
-    await Project.findByIdAndUpdate(req.query.id, {
-      $push: { comments: newComment },
-    });
-    res.status(200).json({ user: user_name, comment: comment });
+    const project = await Project.findByIdAndUpdate(
+      req.query.id,
+      {
+        $push: { comments: newComment },
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ name: userName, comment: comment, user: loggedUser });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
