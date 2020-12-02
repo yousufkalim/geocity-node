@@ -13,6 +13,15 @@ const Material = require("../models/Material");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
+  const address = JSON.parse(req.body.address);
+  const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+  const body = req.body;
+  body.address = address;
+  body.implementation_steps = implementation_steps1;
+
+  // body
+  // file = req.file
+
   const picture = req.file;
   if (picture) {
     var uploaded_Picture = req.file.filename;
@@ -57,7 +66,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     project_owner: Joi.string(),
   });
 
-  const results = schema.validate(req.body);
+  const results = schema.validate(body);
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
@@ -147,6 +156,14 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 //// EDIT PROJECT ////
 
 exports.editProject = asyncHandler(async (req, res, next) => {
+  const address = JSON.parse(req.body.address);
+  const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+  const body = req.body;
+  body.address = address;
+  body.implementation_steps = implementation_steps1;
+
+  // body
+  // file = req.file
   const picture = req.file;
   if (picture) {
     var uploaded_Picture = req.file.filename;
@@ -191,7 +208,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     project_owner: Joi.string(),
   });
 
-  const results = schema.validate(req.body);
+  const results = schema.validate(body);
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
@@ -241,6 +258,39 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     { new: true }
   );
   res.status(200).json({ project: project });
+});
+
+//Edit Implementation Step
+exports.editImplementationStep = asyncHandler(async (req, res, next) => {
+  try {
+    let stepID = req.body.id;
+    let projectID = req.query.id;
+
+    const project = await Project.findById(projectID);
+    const steps = project.implementation_steps;
+    let step = steps.find((item) => item.id === stepID);
+    step = req.body.step;
+    step._id = stepID;
+
+    const updatedProject = await Project.findOneAndUpdate(
+      {
+        _id: projectID,
+        implementation_steps: {
+          $elemMatch: {
+            _id: stepID,
+          },
+        },
+      },
+      { $set: { "implementation_steps.0": step } },
+      { new: true }
+    );
+    res.status(200).json({
+      message: "Step has been updated Successfully",
+      project: updatedProject,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 //// View PROJECT ////

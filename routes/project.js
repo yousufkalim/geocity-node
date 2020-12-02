@@ -48,6 +48,7 @@ const {
   SearchCollaboratorsBySkill,
   SearchCollaboratorsByMaterial,
   SearchCollaboratorsByCategory,
+  editImplementationStep,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -80,6 +81,10 @@ router.post(
   upload.single("general_photo"),
   editProject
 );
+
+//// EDIT Implementation Step ////
+
+router.post("/edit-step", protect, editImplementationStep);
 
 //// Calculate Progress Project ////
 router.post("/project-progress", protect, projectProgress);
