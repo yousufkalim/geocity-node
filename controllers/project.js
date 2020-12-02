@@ -35,7 +35,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     longitude: Joi.string(),
   });
 
-  const nestedSchema = Joi.object().keys({
+  const implementationStepsSchema = Joi.object().keys({
     name: Joi.string().max(20),
     skills: skillSchema,
     status: Joi.string(),
@@ -45,8 +45,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     contributing_user: Joi.array().items(Joi.string()),
   });
 
-  let services = Joi.array().items(nestedSchema);
-
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(100),
     type: Joi.string(),
@@ -54,7 +52,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
-    implementation_steps: services,
+    implementation_steps: Joi.array().items(implementationStepsSchema),
     category: Joi.string(),
     project_owner: Joi.string(),
   });
@@ -122,11 +120,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const project = await new Project({
     title: req.body.title,
     type: req.body.type,
-    city: city,
     address: req.body.address,
-    zipCode: req.body.zipCode,
-    latitude: req.body.latitude,
-    longitude: req.body.longitude,
     progress: req.body.progress,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
@@ -160,32 +154,41 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 
   //// Validation ////
 
-  const nestedSchema = Joi.object().keys({
-    name: Joi.string().max(20),
-    status: Joi.string(),
+  // validation for implementation steps schema //
+  const skillSchema = Joi.object().keys({
     skillField: Joi.string(),
+    skill: Joi.string(),
     speciality: Joi.string().max(20),
+  });
+
+  const addressSchema = Joi.object().keys({
+    city: Joi.string(),
+    street: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
+  });
+
+  const implementationStepsSchema = Joi.object().keys({
+    name: Joi.string().max(20),
+    skills: skillSchema,
+    status: Joi.string(),
     material: Joi.string(),
     materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
 
-  let services = Joi.array().items(nestedSchema);
-
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(100),
     type: Joi.string(),
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
+    address: addressSchema,
     progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
-    implementation_steps: services,
+    implementation_steps: Joi.array().items(implementationStepsSchema),
     category: Joi.string(),
+    project_owner: Joi.string(),
   });
 
   const results = schema.validate(req.body);
@@ -215,9 +218,9 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     );
   }
 
-  var city = req.body.city;
+  var city = req.body.address.city;
   if (!city) {
-    city = req.user.city;
+    city = req.user.address.city;
   }
 
   //// Updating and Saving Project In Database ////
@@ -227,15 +230,13 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     {
       title: req.body.title,
       type: req.body.type,
-      city: city,
       address: req.body.address,
-      zipCode: req.body.zipCode,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
       progress: req.body.progress,
-      general_description: req.body.general_description,
       general_photo: uploaded_Picture || "default.png",
+      general_description: req.body.general_description,
       implementation_steps: steps,
+      category: req.body.category,
+      progress: progress,
     },
     { new: true }
   );
