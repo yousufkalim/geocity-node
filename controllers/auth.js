@@ -17,12 +17,10 @@ const Category = require("../models/Category");
 
 exports.register = asyncHandler(async (req, res, next) => {
   try {
-    const address = JSON.parse(req.body.address);
     const skills1 = JSON.parse(req.body.skills);
     const material1 = JSON.parse(req.body.material);
 
     const body = req.body;
-    body.address = address;
     body.skills = skills1;
     body.material = material1;
 
@@ -42,7 +40,6 @@ exports.register = asyncHandler(async (req, res, next) => {
       username: Joi.string().min(5).max(20),
       email: Joi.string().max(40).email(),
       city: Joi.string(),
-      address: Joi.string(),
       zipCode: Joi.string(),
       latitude: Joi.string(),
       longitude: Joi.string(),
@@ -115,6 +112,9 @@ exports.register = asyncHandler(async (req, res, next) => {
         username,
         email,
         city,
+        zipCode,
+        latitude,
+        longitude,
         password,
         availability,
         profile_picture: uploaded_Picture || "default.png",
