@@ -44,6 +44,15 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
 
 // Edit profile
 exports.editProfile = asyncHandler(async (req, res, next) => {
+  const address = JSON.parse(req.body.address);
+  const skills1 = JSON.parse(req.body.skills);
+  const material1 = JSON.parse(req.body.material);
+
+  const body = req.body;
+  body.address = address;
+  body.skills = skills1;
+  body.material = material1;
+
   const picture = req.file;
   if (picture) {
     var uploaded_Picture = req.file.filename;
@@ -51,9 +60,11 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 
   const nestedSchema = Joi.object().keys({
     skillField: Joi.string().max(30),
+    skill: Joi.string(),
     specialization: Joi.string().max(20),
-    score: Joi.number().max(20),
+    score: Joi.number().max(5),
   });
+
   let services = Joi.array().max(3).items(nestedSchema);
 
   const schema = Joi.object().keys({
@@ -64,9 +75,15 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     phone: Joi.string()
       .max(10)
       .pattern(/^[0-9]+$/),
-    skills: services,
+    skills: Joi.array().max(3).items(nestedSchema),
     material: Joi.array().max(50).items(Joi.string()),
   });
+
+  const results = schema.validate(body);
+  if (results.error) {
+    return res.status(400).send(results.error.details[0].message);
+  }
+
   // Check if the skills are in database or not, If Not then saving them in the database//
   const skills = req.body.skills;
   skills.map(async (val) => {

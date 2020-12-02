@@ -17,6 +17,15 @@ const Category = require("../models/Category");
 
 exports.register = asyncHandler(async (req, res, next) => {
   try {
+    const address = JSON.parse(req.body.address);
+    const skills1 = JSON.parse(req.body.skills);
+    const material1 = JSON.parse(req.body.material);
+
+    const body = req.body;
+    body.address = address;
+    body.skills = skills1;
+    body.material = material1;
+
     if (req.file) {
       var uploaded_Picture = req.file.filename;
     }
@@ -50,7 +59,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       notifications: Joi.array(),
     });
 
-    const results = schema.validate(req.body);
+    const results = schema.validate(body);
     if (results.error) {
       return res.status(400).send(results.error.details[0].message);
     }
