@@ -23,7 +23,7 @@ const ImpStepSchema = new mongoose.Schema({
   },
 
   material: {
-    type: [mongoose.Schema.Types.ObjectId],
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Material",
     required: false,
   },

@@ -10,8 +10,6 @@ const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
 const Material = require("../models/Material");
-const { func } = require("joi");
-const { findByIdAndUpdate } = require("../models/User");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -41,7 +39,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     name: Joi.string().max(20),
     skills: skillSchema,
     status: Joi.string(),
-    material: Joi.array().items(Joi.string()),
+    material: Joi.string(),
     materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
@@ -167,7 +165,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     status: Joi.string(),
     skillField: Joi.string(),
     speciality: Joi.string().max(20),
-    material: Joi.array().items(Joi.string()),
+    material: Joi.string(),
     materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
@@ -197,23 +195,25 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 
   // Check if the Material are in database or not, If Not then saving them in the database//
   var steps = req.body.implementation_steps;
-  await Promise.all(
-    await steps.map(async (val) => {
-      const requestedMaterial = val.materialName;
+  if (steps) {
+    await Promise.all(
+      await steps.map(async (val) => {
+        const requestedMaterial = val.materialName;
 
-      if (requestedMaterial) {
-        const result = await Material.find({ name: requestedMaterial });
-        if (result.length == 0) {
-          const newMaterial = new Material({
-            name: requestedMaterial,
-          });
-          await newMaterial
-            .save()
-            .then(await val.material.push(newMaterial._id));
+        if (requestedMaterial) {
+          const result = await Material.find({ name: requestedMaterial });
+          if (result.length == 0) {
+            const newMaterial = new Material({
+              name: requestedMaterial,
+            });
+            await newMaterial
+              .save()
+              .then(await val.material.push(newMaterial._id));
+          }
         }
-      }
-    })
-  );
+      })
+    );
+  }
 
   var city = req.body.city;
   if (!city) {
