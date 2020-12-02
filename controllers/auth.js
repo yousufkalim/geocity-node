@@ -16,110 +16,110 @@ const Category = require("../models/Category");
 //REGISTER USER API
 
 exports.register = asyncHandler(async (req, res, next) => {
-  const picture = req.file;
-  if (picture) {
-    var uploaded_Picture = req.file.filename;
-  }
+  try {
+    if (req.file) {
+      var uploaded_Picture = req.file.filename;
+    }
 
-  // Validation
-
-  const nestedSchema = Joi.object().keys({
-    skillField: Joi.string().max(30),
-    skill: Joi.string(),
-    specialization: Joi.string().max(20),
-    score: Joi.number().max(5),
-  });
-
-  let services = Joi.array().max(3).items(nestedSchema);
-
-  const schema = Joi.object().keys({
-    username: Joi.string().min(5).max(20),
-    email: Joi.string().max(40).email(),
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
-    password: Joi.string().min(6).max(255),
-    availability: Joi.string().min(6).max(255),
-    confirm_password: Joi.string().min(6).max(255),
-    profile_picture: Joi.string().max(255),
-    profile_description: Joi.string().max(600),
-    phone: Joi.string()
-      .max(10)
-      .pattern(/^[0-9]+$/),
-    skills: services,
-    material: Joi.array().max(50).items(Joi.string()),
-    notifications: Joi.array(),
-  });
-
-  const results = schema.validate(req.body);
-  if (results.error) {
-    return res.status(400).send(results.error.details[0].message);
-  }
-
-  const {
-    username,
-    email,
-    city,
-    password,
-    availability,
-    confirm_password,
-    profile_picture,
-    profile_description,
-    phone,
-    skills,
-    material,
-    notifications,
-  } = req.body;
-
-  // Check if the skills are in database or not, If Not then saving them in the database//
-  if (skills) {
-    skills.map(async (val) => {
-      let result = false;
-      var requestedSkill = val.skill;
-      var savedSkillField = await Skill.findById(val.skillField);
-      savedSkillField.skill.map(async (val1) => {
-        if (requestedSkill == val1) {
-          result = true;
-        }
-      });
-
-      if (result == false) {
-        await Skill.findByIdAndUpdate(val.skillField, {
-          $push: { skill: requestedSkill },
-        });
-      }
+    // Validation
+    const nestedSchema = Joi.object().keys({
+      skillField: Joi.string().max(30),
+      skill: Joi.string(),
+      specialization: Joi.string().max(20),
+      score: Joi.number().max(5),
     });
-  }
 
-  //// Check If Password and Confirm Password are same or not ////
-  if (password !== confirm_password) {
-    res.status(403).send("Password and Confirm Password are not same");
-  }
+    const schema = Joi.object().keys({
+      username: Joi.string().min(5).max(20),
+      email: Joi.string().max(40).email(),
+      city: Joi.string(),
+      address: Joi.string(),
+      zipCode: Joi.string(),
+      latitude: Joi.string(),
+      longitude: Joi.string(),
+      password: Joi.string().min(6).max(255),
+      availability: Joi.string().min(6).max(255),
+      confirm_password: Joi.string().min(6).max(255),
+      profile_picture: Joi.string().max(255),
+      profile_description: Joi.string().max(600),
+      phone: Joi.string()
+        .max(10)
+        .pattern(/^[0-9]+$/),
+      skills: Joi.array().max(3).items(nestedSchema),
+      material: Joi.array().max(50).items(Joi.string()),
+      notifications: Joi.array(),
+    });
 
-  //// Check If user exist with this Email or not ////
+    const results = schema.validate(req.body);
+    if (results.error) {
+      return res.status(400).send(results.error.details[0].message);
+    }
 
-  const result = await User.findOne({ email: email });
-  if (result) {
-    res.status(404).send("User already registered with this Email Address");
-  } else {
-    // Saving User in DataBase
-    const user = await User.create({
+    const {
       username,
       email,
       city,
       password,
       availability,
-      profile_picture: uploaded_Picture || "default.png",
+      confirm_password,
+      profile_picture,
       profile_description,
       phone,
       skills,
       material,
       notifications,
-    });
+    } = req.body;
 
-    res.status(200).json({ user: user });
+    // Check if the skills are in database or not, If Not then saving them in the database//
+    if (skills) {
+      skills.map(async (val) => {
+        let result = false;
+        var requestedSkill = val.skill;
+        var savedSkillField = await Skill.findById(val.skillField);
+        savedSkillField.skill.map(async (val1) => {
+          if (requestedSkill == val1) {
+            result = true;
+          }
+        });
+
+        if (result == false) {
+          await Skill.findByIdAndUpdate(val.skillField, {
+            $push: { skill: requestedSkill },
+          });
+        }
+      });
+    }
+
+    //// Check If Password and Confirm Password are same or not ////
+    if (password !== confirm_password) {
+      res.status(403).send("Password and Confirm Password are not same");
+    }
+
+    //// Check If user exist with this Email or not ////
+
+    const result = await User.findOne({ email: email });
+    if (result) {
+      res.status(404).send("User already registered with this Email Address");
+    } else {
+      // Saving User in DataBase
+      const user = await User.create({
+        username,
+        email,
+        city,
+        password,
+        availability,
+        profile_picture: uploaded_Picture || "default.png",
+        profile_description,
+        phone,
+        skills,
+        material,
+        notifications,
+      });
+
+      res.status(200).json({ user: user });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 

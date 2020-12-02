@@ -10,11 +10,18 @@ const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
 const Material = require("../models/Material");
-const { func } = require("joi");
-const { findByIdAndUpdate } = require("../models/User");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
+  const address = JSON.parse(req.body.address);
+  const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+  const body = req.body;
+  body.address = address;
+  body.implementation_steps = implementation_steps1;
+
+  // body
+  // file = req.file
+
   const picture = req.file;
   if (picture) {
     var uploaded_Picture = req.file.filename;
@@ -37,17 +44,15 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     longitude: Joi.string(),
   });
 
-  const nestedSchema = Joi.object().keys({
+  const implementationStepsSchema = Joi.object().keys({
     name: Joi.string().max(20),
     skills: skillSchema,
     status: Joi.string(),
-    material: Joi.array().items(Joi.string()),
+    material: Joi.string(),
     materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
-
-  let services = Joi.array().items(nestedSchema);
 
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(100),
@@ -56,12 +61,12 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
-    implementation_steps: services,
+    implementation_steps: Joi.array().items(implementationStepsSchema),
     category: Joi.string(),
     project_owner: Joi.string(),
   });
 
-  const results = schema.validate(req.body);
+  const results = schema.validate(body);
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
@@ -126,11 +131,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
   const project = await new Project({
     title: req.body.title,
     type: req.body.type,
-    city: city,
     address: req.body.address,
-    zipCode: req.body.zipCode,
-    latitude: req.body.latitude,
-    longitude: req.body.longitude,
     progress: req.body.progress,
     general_photo: uploaded_Picture || "default.png",
     general_description: req.body.general_description,
@@ -157,6 +158,14 @@ exports.createProject = asyncHandler(async (req, res, next) => {
 //// EDIT PROJECT ////
 
 exports.editProject = asyncHandler(async (req, res, next) => {
+  const address = JSON.parse(req.body.address);
+  const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+  const body = req.body;
+  body.address = address;
+  body.implementation_steps = implementation_steps1;
+
+  // body
+  // file = req.file
   const picture = req.file;
   if (picture) {
     var uploaded_Picture = req.file.filename;
@@ -164,62 +173,73 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 
   //// Validation ////
 
-  const nestedSchema = Joi.object().keys({
-    name: Joi.string().max(20),
-    status: Joi.string(),
+  // validation for implementation steps schema //
+  const skillSchema = Joi.object().keys({
     skillField: Joi.string(),
+    skill: Joi.string(),
     speciality: Joi.string().max(20),
-    material: Joi.array().items(Joi.string()),
+  });
+
+  const addressSchema = Joi.object().keys({
+    city: Joi.string(),
+    street: Joi.string(),
+    zipCode: Joi.string(),
+    latitude: Joi.string(),
+    longitude: Joi.string(),
+  });
+
+  const implementationStepsSchema = Joi.object().keys({
+    name: Joi.string().max(20),
+    skills: skillSchema,
+    status: Joi.string(),
+    material: Joi.string(),
     materialName: Joi.string(),
     description: Joi.string().max(150),
     contributing_user: Joi.array().items(Joi.string()),
   });
 
-  let services = Joi.array().items(nestedSchema);
-
   const schema = Joi.object().keys({
     title: Joi.string().min(5).max(100),
     type: Joi.string(),
-    city: Joi.string(),
-    address: Joi.string(),
-    zipCode: Joi.string(),
-    latitude: Joi.string(),
-    longitude: Joi.string(),
+    address: addressSchema,
     progress: Joi.string(),
     general_photo: Joi.string().max(255),
     general_description: Joi.string().max(3000),
-    implementation_steps: services,
+    implementation_steps: Joi.array().items(implementationStepsSchema),
     category: Joi.string(),
+    project_owner: Joi.string(),
   });
 
-  const results = schema.validate(req.body);
+  const results = schema.validate(body);
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
 
   // Check if the Material are in database or not, If Not then saving them in the database//
   var steps = req.body.implementation_steps;
-  await Promise.all(
-    await steps.map(async (val) => {
-      const requestedMaterial = val.materialName;
+  if (steps) {
+    await Promise.all(
+      await steps.map(async (val) => {
+        const requestedMaterial = val.materialName;
 
-      if (requestedMaterial) {
-        const result = await Material.find({ name: requestedMaterial });
-        if (result.length == 0) {
-          const newMaterial = new Material({
-            name: requestedMaterial,
-          });
-          await newMaterial
-            .save()
-            .then(await val.material.push(newMaterial._id));
+        if (requestedMaterial) {
+          const result = await Material.find({ name: requestedMaterial });
+          if (result.length == 0) {
+            const newMaterial = new Material({
+              name: requestedMaterial,
+            });
+            await newMaterial
+              .save()
+              .then(await val.material.push(newMaterial._id));
+          }
         }
-      }
-    })
-  );
+      })
+    );
+  }
 
-  var city = req.body.city;
+  var city = req.body.address.city;
   if (!city) {
-    city = req.user.city;
+    city = req.user.address.city;
   }
 
   //// Updating and Saving Project In Database ////
@@ -229,19 +249,50 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     {
       title: req.body.title,
       type: req.body.type,
-      city: city,
       address: req.body.address,
-      zipCode: req.body.zipCode,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
       progress: req.body.progress,
-      general_description: req.body.general_description,
       general_photo: uploaded_Picture || "default.png",
+      general_description: req.body.general_description,
       implementation_steps: steps,
+      category: req.body.category,
+      progress: progress,
     },
     { new: true }
   );
   res.status(200).json({ project: project });
+});
+
+//Edit Implementation Step
+exports.editImplementationStep = asyncHandler(async (req, res, next) => {
+  try {
+    let stepID = req.body.id;
+    let projectID = req.query.id;
+
+    const project = await Project.findById(projectID);
+    const steps = project.implementation_steps;
+    let step = steps.find((item) => item.id === stepID);
+    step = req.body.step;
+    step._id = stepID;
+
+    const updatedProject = await Project.findOneAndUpdate(
+      {
+        _id: projectID,
+        implementation_steps: {
+          $elemMatch: {
+            _id: stepID,
+          },
+        },
+      },
+      { $set: { "implementation_steps.0": step } },
+      { new: true }
+    );
+    res.status(200).json({
+      message: "Step has been updated Successfully",
+      project: updatedProject,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 //// View PROJECT ////
