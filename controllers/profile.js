@@ -43,80 +43,89 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
 
 // Edit profile
 exports.editProfile = asyncHandler(async (req, res, next) => {
-  const skills1 = JSON.parse(req.body.skills);
-  const material1 = JSON.parse(req.body.material);
+  try {
+    console.log(req.file);
+    const skills1 = JSON.parse(req.body.skills);
+    const material1 = JSON.parse(req.body.material);
 
-  const body = req.body;
-  body.skills = skills1;
-  body.material = material1;
+    const body = req.body;
+    body.skills = skills1;
+    body.material = material1;
 
-  const picture = req.file;
-  if (picture) {
-    var uploaded_Picture = req.file.filename;
-  }
+    const picture = req.file;
+    if (picture) {
+      var uploaded_Picture = req.file.filename;
+    }
 
-  const nestedSchema = Joi.object().keys({
-    skillField: Joi.string().max(30),
-    skill: Joi.string(),
-    specialization: Joi.string().max(20),
-    score: Joi.number().max(5),
-  });
+    const nestedSchema = Joi.object().keys({
+      skillField: Joi.string().max(30),
+      skill: Joi.string(),
+      specialization: Joi.string().max(20),
+      score: Joi.number().max(5),
+    });
 
-  let services = Joi.array().max(3).items(nestedSchema);
+    let services = Joi.array().max(3).items(nestedSchema);
 
-  const schema = Joi.object().keys({
-    username: Joi.string().min(5).max(20),
-    city: Joi.string().max(20),
-    profile_picture: Joi.string().max(255),
-    profile_description: Joi.string().max(600),
-    phone: Joi.string()
-      .max(10)
-      .pattern(/^[0-9]+$/),
-    skills: Joi.array().max(3).items(nestedSchema),
-    material: Joi.array().max(50).items(Joi.string()),
-  });
+    const schema = Joi.object().keys({
+      username: Joi.string().min(5).max(20),
+      availability: Joi.string(),
+      city: Joi.string().max(20),
+      profile_picture: Joi.string().max(255),
+      profile_description: Joi.string().max(600),
+      phone: Joi.string()
+        .max(10)
+        .pattern(/^[0-9]+$/),
+      skills: Joi.array().max(3).items(nestedSchema),
+      material: Joi.array().max(50).items(Joi.string()),
+    });
 
-  const results = schema.validate(body);
-  if (results.error) {
-    return res.status(400).send(results.error.details[0].message);
-  }
+    const results = schema.validate(body);
+    if (results.error) {
+      return res.status(400).send(results.error.details[0].message);
+    }
 
-  // Check if the skills are in database or not, If Not then saving them in the database//
-  const skills = req.body.skills;
-  skills.map(async (val) => {
-    let result = false;
-    var requestedSkill = val.skill;
-    var savedSkillField = await Skill.findById(val.skillField);
-    savedSkillField.skill.map(async (val1) => {
-      if (requestedSkill == val1) {
-        result = true;
+    // Check if the skills are in database or not, If Not then saving them in the database//
+    const skills = req.body.skills;
+    skills.map(async (val) => {
+      let result = false;
+      var requestedSkill = val.skill;
+      var savedSkillField = await Skill.findById(val.skillField);
+      savedSkillField.skill.map(async (val1) => {
+        if (requestedSkill == val1) {
+          result = true;
+        }
+      });
+
+      if (result == false) {
+        await Skill.findByIdAndUpdate(val.skillField, {
+          $push: { skill: requestedSkill },
+        });
       }
     });
 
-    if (result == false) {
-      await Skill.findByIdAndUpdate(val.skillField, {
-        $push: { skill: requestedSkill },
-      });
-    }
-  });
-
-  const user = await User.findByIdAndUpdate(
-    req.query.id,
-    {
-      username: req.body.username,
-      city: req.body.city,
-      zipCode: req.body.zipCode,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
-      profile_description: req.body.profile_description,
-      phone: req.body.phone,
-      profile_picture: uploaded_Picture || "default.png",
-      skills: req.body.skills,
-      material: req.body.material,
-    },
-    { new: true }
-  );
-  res.status(200).json({ user: user });
+    const user = await User.findByIdAndUpdate(
+      req.query.id,
+      {
+        username: req.body.username,
+        availability: req.body.availability,
+        city: req.body.city,
+        zipCode: req.body.zipCode,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        profile_description: req.body.profile_description,
+        phone: req.body.phone,
+        profile_picture: uploaded_Picture || "default.png",
+        skills: req.body.skills,
+        material: req.body.material,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Profile Updated successfully", user: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 // Delete profile
