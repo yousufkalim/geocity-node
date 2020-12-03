@@ -180,7 +180,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     category: Joi.string(),
   });
 
-  const results = schema.validate(body);
+  const results = schema.validate(req.body);
   if (results.error) {
     return res.status(400).send(results.error.details[0].message);
   }
