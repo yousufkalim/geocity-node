@@ -44,7 +44,6 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
 // Edit profile
 exports.editProfile = asyncHandler(async (req, res, next) => {
   try {
-    console.log(req.file);
     const skills1 = JSON.parse(req.body.skills);
     const material1 = JSON.parse(req.body.material);
 
@@ -70,6 +69,9 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       username: Joi.string().min(5).max(20),
       availability: Joi.string(),
       city: Joi.string().max(20),
+      zipCode: Joi.string(),
+      latitude: Joi.string(),
+      longitude: Joi.string(),
       profile_picture: Joi.string().max(255),
       profile_description: Joi.string().max(600),
       phone: Joi.string()
