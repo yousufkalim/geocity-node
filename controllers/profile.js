@@ -9,7 +9,6 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Skill = require("../models/Skill");
 const Category = require("../models/Category");
-const { insertMany } = require("../models/User");
 
 //// View PROFILE ////
 
@@ -44,12 +43,10 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
 
 // Edit profile
 exports.editProfile = asyncHandler(async (req, res, next) => {
-  const address = JSON.parse(req.body.address);
   const skills1 = JSON.parse(req.body.skills);
   const material1 = JSON.parse(req.body.material);
 
   const body = req.body;
-  body.address = address;
   body.skills = skills1;
   body.material = material1;
 
@@ -108,7 +105,6 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     {
       username: req.body.username,
       city: req.body.city,
-      address: req.body.address,
       zipCode: req.body.zipCode,
       latitude: req.body.latitude,
       longitude: req.body.longitude,
