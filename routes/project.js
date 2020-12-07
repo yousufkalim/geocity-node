@@ -42,6 +42,7 @@ const {
   RequestToView,
   requestToViewProjectDecision,
   InviteUser,
+  inviteCollaboratorDecision,
   deleteContributor,
   SearchByCity,
   SearchBySkill,
@@ -118,6 +119,11 @@ router.post(
 );
 //// Invite users to contribute  ////
 router.post("/view-project/send-invite", protect, InviteUser);
+router.post(
+  "/view-project/invite-collaborator/decison",
+  protect,
+  inviteCollaboratorDecision
+);
 
 //// Delete users to contribute against a single step ////
 router.post(

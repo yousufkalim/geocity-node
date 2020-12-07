@@ -9,13 +9,13 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
-var cors = require('cors')
+var cors = require("cors");
 const app = express();
-require("./jobs/agenda")
+require("./jobs/agenda");
 
 //// Body Parser Middleware ////
 app.use(bodyParser.json());
-app.use(cors())
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //// Cookie Parser ////
@@ -67,9 +67,15 @@ app.use("/api/v1/profile", profile);
 app.use("/api/v1/project", project);
 app.use("/api/v1/admin", admin);
 
+//// Error Handler
+app.use((error, req, res, next) => {
+  console.log("Main Error =>", error);
+  const message = error.message;
+  const status = error.status || 500;
+  res.status(status).json({ message: message, error: error });
+});
+
 //// Setting Port for Server ////
-
-
 const PORT = 5000 || process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
