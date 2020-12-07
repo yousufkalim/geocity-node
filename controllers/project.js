@@ -723,3 +723,42 @@ exports.inviteDecision = asyncHandler(async (req, res, next) => {
     docs.invitation;
   });
 });
+
+// Accept and Decline request to view Project //
+exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
+  try {
+    const decision = req.body.decision;
+    const projectID = req.query.id;
+    const invitationID = req.body.invitation;
+    const project = await Project.findById(projectID);
+    const requestedUserID = req.body.sender;
+
+    if (decision == "Accept") {
+      await Project.findByIdAndUpdate(projectID, {
+        $push: {
+          usersToView: requestedUserID,
+        },
+      });
+      res.status(200).json({ message: "Request Approved!" });
+    } else if (decision == "Decline") {
+      await User.findByIdAndUpdate(requestedUserID, {
+        $push: {
+          notifications: `Your request to view ${project.title} has been rejected by the project owner`,
+        },
+      })
+        .then(async () => {
+          await Invitation.findByIdAndDelete(invitationID);
+        })
+        .then(async () => {
+          await User.findByIdAndUpdate(project.project_owner, {
+            $pull: {
+              invitation: invitationID,
+            },
+          });
+        });
+      res.status(200).json({ message: "Request Rejected!" });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});

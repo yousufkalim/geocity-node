@@ -40,6 +40,7 @@ const {
   totalLikes,
   comment,
   RequestToView,
+  requestToViewProjectDecision,
   InviteUser,
   deleteContributor,
   SearchByCity,
@@ -110,6 +111,11 @@ router.post("/view-project/comment", protect, comment);
 //// Request to view a Project  ////
 router.post("/view-project/send-request", protect, RequestToView);
 
+router.post(
+  "/view-project/requests/decision",
+  protect,
+  requestToViewProjectDecision
+);
 //// Invite users to contribute  ////
 router.post("/view-project/send-invite", protect, InviteUser);
 
