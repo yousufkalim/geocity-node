@@ -738,9 +738,17 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
         $push: {
           usersToView: requestedUserID,
         },
-      }).then(async () => {
-        await Invitation.findByIdAndDelete(invitationID);
-      });
+      })
+        .then(async () => {
+          await Invitation.findByIdAndDelete(invitationID);
+        })
+        .then(async () => {
+          await User.findByIdAndUpdate(project.project_owner, {
+            $pull: {
+              invitation: invitationID,
+            },
+          });
+        });
       res.status(200).json({ message: "Request Approved!" });
     } else if (decision == "Decline") {
       await User.findByIdAndUpdate(requestedUserID, {
