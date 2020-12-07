@@ -738,6 +738,8 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
         $push: {
           usersToView: requestedUserID,
         },
+      }).then(async () => {
+        await Invitation.findByIdAndDelete(invitationID);
       });
       res.status(200).json({ message: "Request Approved!" });
     } else if (decision == "Decline") {
