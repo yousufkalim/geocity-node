@@ -337,6 +337,10 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
     .then(
       await User.findByIdAndUpdate(receiver, {
         $push: { invitation: newInvitation._id },
+      })
+    )
+    .then(
+      await User.findByIdAndUpdate(receiver, {
         $push: {
           notifications: {
             title: "Request to View Project",
