@@ -34,6 +34,9 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
         path: "comments.user",
       },
       {
+        path: "interests",
+      },
+      {
         path: "invitation",
         populate: [
           {
@@ -197,7 +200,6 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
         user.projects.map(async function (val) {
           const project = await Project.findById(val).populate("category");
           const totalLikes = project.likedBy.length;
-          console.log(totalLikes);
           if (project.project_owner == userId) {
             owned_projects.push({ project: project, Likes: totalLikes });
           } else {
