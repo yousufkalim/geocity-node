@@ -33,6 +33,27 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
       {
         path: "comments.user",
       },
+      {
+        path: "invitation",
+        populate: [
+          {
+            path: "sender",
+            model: "User",
+          },
+          {
+            path: "receiver",
+            model: "User",
+          },
+          {
+            path: "skillID",
+            model: "Skill",
+          },
+          {
+            path: "projectID",
+            model: "Project",
+          },
+        ],
+      },
     ];
     const user = await User.findById(req.query.id).populate(populateQuery);
     res.status(200).json({ user: user });

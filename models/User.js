@@ -120,16 +120,20 @@ const UserSchema = new mongoose.Schema({
       required: false,
     },
   ],
-  interests: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Category",
-    required: false,
-  },
-  invitation: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Invitation",
-    required: false,
-  },
+  interests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: false,
+    },
+  ],
+  invitation: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Invitation",
+      required: false,
+    },
+  ],
   projects: [
     {
       type: mongoose.Schema.Types.ObjectId,
