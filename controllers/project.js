@@ -648,11 +648,13 @@ exports.SearchCollaboratorsByMaterial = asyncHandler(async (req, res, next) => {
   try {
     const material = req.body.material;
 
-    const users = await User.find({ material: { $in: material } });
+    const users = await User.find({ material: { $in: material } }).populate(
+      "material"
+    );
     if (users == "") {
       res.status(200).send("No Users found with this Material name");
     } else {
-      res.status(200).json(users);
+      res.status(200).json({ users: users });
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
