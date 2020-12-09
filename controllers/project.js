@@ -494,6 +494,7 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
                 title: "Project Deletion by Project Owner",
                 description:
                   "Project Owner has requested to delete this Project",
+                projectID: projectID,
               },
             },
           });
@@ -510,8 +511,8 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
       const project = await Project.findByIdAndUpdate(projectID, {
         isDeleted: true,
       });
+      res.status(200).json({ message: "Project Deleted Successfully" });
     }
-    res.status(200).json({ message: "Project Deleted Successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -535,7 +536,6 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
         res.status(400).json({ message: "Already deleted" });
         return;
       }
-
       // true = yes delete, false = no delete
       project.isDeleted = decision ? true : false;
       project.contributingUsers_decision.push({
