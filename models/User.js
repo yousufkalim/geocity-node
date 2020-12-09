@@ -96,6 +96,10 @@ const UserSchema = new mongoose.Schema({
     {
       title: String,
       description: String,
+      projectID: {
+        type: String,
+        required: false,
+      },
     },
   ],
   availability: {
