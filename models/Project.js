@@ -110,7 +110,7 @@ const ProjectSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
-      decision: Boolean,
+      decision: String,
       required: false,
     },
   ],

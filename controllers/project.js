@@ -10,6 +10,7 @@ const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Skill = require("../models/Skill");
 const Material = require("../models/Material");
+const { updateOne } = require("../models/User");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -492,8 +493,7 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
             $push: {
               notifications: {
                 title: "Project Deletion by Project Owner",
-                description:
-                  "Project Owner has requested to delete this Project",
+                description: `Project Owner has requested to delete this Project, Do you want him to delete?`,
                 projectID: projectID,
               },
             },
@@ -521,13 +521,13 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
 // Collaborator Decision to Delete Project //
 exports.takeDecision = asyncHandler(async (req, res, next) => {
   try {
+    let contributingUsers = [];
+    let usersDecisions = [];
     const decision = req.body.decision;
     const projectID = req.query.id;
-    if (
-      decision == null ||
-      decision == undefined ||
-      typeof decision !== "boolean"
-    ) {
+    const user = await User.findById(req.user._id);
+
+    if (decision == null || decision == undefined) {
       res.status(403).json({ message: "Please Specify your answer properly" });
       return;
     } else {
@@ -536,19 +536,67 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
         res.status(400).json({ message: "Already deleted" });
         return;
       }
-      // true = yes delete, false = no delete
-      project.isDeleted = decision ? true : false;
-      project.contributingUsers_decision.push({
-        id: req.user._id,
-        decision,
-      });
-      await project.save().then(
-        project.isDeleted
-          ? res.status(200).json({ message: "Project Deleted Successfully" })
-          : res.status(200).json({
-              message: "Your Response Submitted- Project Cannot be Deleted",
-            })
-      );
+
+      if (decision) {
+        var updatedProject = await Project.findByIdAndUpdate(
+          projectID,
+          {
+            $push: {
+              contributingUsers_decision: {
+                id: req.user._id,
+                decision,
+              },
+            },
+          },
+          { new: true }
+        );
+        res.status(200).json({
+          message: "Your Response Submitted, Thankyou!",
+        });
+      }
+      if (decision == "No") {
+        await User.findByIdAndUpdate(project.project_owner, {
+          $push: {
+            notifications: {
+              title: "Project Deletion Cancelled",
+              description: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+              projectID: projectID,
+            },
+          },
+        });
+      }
+
+      if (updatedProject.contributingUsers_decision) {
+        const steps = updatedProject.implementation_steps;
+        steps.map(function (val) {
+          contributingUsers.push(val.contributing_user);
+        });
+        if (
+          contributingUsers.length ==
+          updatedProject.contributingUsers_decision.length
+        ) {
+          project.contributingUsers_decision.map((item) => {
+            usersDecisions.push(item.decision);
+          });
+
+          const result = usersDecisions.includes("No");
+          if (result) {
+            await User.findByIdAndUpdate(project.project_owner, {
+              $push: {
+                notifications: {
+                  title: "Project Deletion Cancelled",
+                  description: `You cannot Delete this Project`,
+                  projectID: projectID,
+                },
+              },
+            });
+          } else {
+            await Project.findByIdAndUpdate(projectID, {
+              isDeleted: true,
+            });
+          }
+        }
+      }
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
