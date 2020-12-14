@@ -357,6 +357,11 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
         })
       )
       .then(
+        await User.findByIdAndUpdate(sender, {
+          $push: { invitation: newInvitation.id },
+        })
+      )
+      .then(
         await User.findByIdAndUpdate(receiver, {
           $push: {
             notifications: {
@@ -399,6 +404,11 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
       .save()
       .then(
         await User.findByIdAndUpdate(receiver, {
+          $push: { invitation: newInvitation.id },
+        })
+      )
+      .then(
+        await User.findByIdAndUpdate(senderID, {
           $push: { invitation: newInvitation.id },
         })
       )
