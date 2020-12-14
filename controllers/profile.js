@@ -210,24 +210,33 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
           if (project.project_owner == userId) {
             owned_projects.push({ project: project, Likes: totalLikes });
           } else {
-            contributing_projects.push({ project });
+            contributing_projects.push({ project, Likes: totalLikes });
           }
         })
       );
+      res.status(200).json({
+        ownedProjects: owned_projects,
+        contributingProjects: contributing_projects,
+      });
     } else {
       if (user.projects.length > 0) {
-        user.projects.map(async (item) => {
-          const project = await Project.findById(item);
-          contributing_projects.push({ project });
+        await Promise.all(
+          user.projects.map(async (item) => {
+            const project = await Project.findById(item);
+            contributing_projects.push({
+              project: project,
+              likes: project.likedBy.length,
+            });
+          })
+        );
+        res.status(200).json({
+          ownedProjects: owned_projects,
+          contributingProjects: contributing_projects,
         });
       } else {
         return res.status(200).json({ message: "You have no projects yet" });
       }
     }
-    res.status(200).json({
-      ownedProjects: owned_projects,
-      contributingProjects: contributing_projects,
-    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
