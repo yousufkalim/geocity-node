@@ -804,6 +804,7 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
           await Invitation.findByIdAndDelete(invitationID).then(async () => {
             await User.findByIdAndUpdate(invitation.receiver, {
               $pull: { invitation: invitationID },
+              $push: { projects: projectID },
             });
           });
         })
