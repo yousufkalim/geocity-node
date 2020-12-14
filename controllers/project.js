@@ -35,7 +35,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      speciality: Joi.string().max(20),
+      // speciality: Joi.string().max(20),
     });
 
     const addressSchema = Joi.object().keys({
@@ -172,7 +172,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      speciality: Joi.string().max(20),
+      // speciality: Joi.string().max(20),
     });
 
     const schema = Joi.object().keys({
@@ -526,6 +526,7 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
     const decision = req.body.decision;
     const projectID = req.query.id;
     const user = await User.findById(req.user._id);
+    const notificationID = req.body.notificationID;
 
     if (decision == null || decision == undefined) {
       res.status(403).json({ message: "Please Specify your answer properly" });
@@ -549,7 +550,15 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
             },
           },
           { new: true }
-        );
+        ).then(() => {
+          User.findByIdAndUpdate(req.user._id, {
+            notifications: {
+              $pull: {
+                _id: notificationID,
+              },
+            },
+          });
+        });
         res.status(200).json({
           message: "Your Response Submitted, Thankyou!",
         });
