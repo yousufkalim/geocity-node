@@ -33,6 +33,10 @@ const InvitationSchema = new mongoose.Schema({
     default: "pending",
     required: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Invitation", InvitationSchema);

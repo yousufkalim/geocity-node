@@ -27,6 +27,13 @@ exports.viewProfile = asyncHandler(async (req, res, next) => {
         select: "skillField",
       },
       {
+        path: "projects",
+        populate: {
+          path: "implementation_steps.contributing_user",
+          model: "User",
+        },
+      },
+      {
         path: "material",
         select: "name",
       },
