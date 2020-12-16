@@ -29,22 +29,20 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  socialLinks: [
-    {
-      facebook: {
-        type: String,
-        required: false,
-      },
-      instagram: {
-        type: String,
-        required: false,
-      },
-      youtube: {
-        type: String,
-        required: false,
-      },
-    },
-  ],
+
+  facebook: {
+    type: String,
+    required: false,
+  },
+  instagram: {
+    type: String,
+    required: false,
+  },
+  youtube: {
+    type: String,
+    required: false,
+  },
+
   email: {
     type: String,
     required: false,
