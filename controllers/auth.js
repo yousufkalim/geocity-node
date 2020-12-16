@@ -1,11 +1,4 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const session = require("express-session");
-const passport = require("passport");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 const Joi = require("joi");
-const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
@@ -38,6 +31,13 @@ exports.register = asyncHandler(async (req, res, next) => {
 
     const schema = Joi.object().keys({
       username: Joi.string().min(5).max(20),
+      firstName: Joi.string().min(5).max(20),
+      lastName: Joi.string().min(5).max(20),
+      socialLinks: Joi.object().keys({
+        faceBook: Joi.string().uri().allow(""),
+        instagram: Joi.string().uri().allow(""),
+        youtube: Joi.string().uri().allow(""),
+      }),
       email: Joi.string().max(40).email(),
       city: Joi.string(),
       zipCode: Joi.string(),
@@ -63,6 +63,9 @@ exports.register = asyncHandler(async (req, res, next) => {
 
     const {
       username,
+      firstName,
+      lastName,
+      socialLinks,
       email,
       city,
       zipCode,
@@ -113,6 +116,9 @@ exports.register = asyncHandler(async (req, res, next) => {
       // Saving User in DataBase
       const user = await User.create({
         username,
+        firstName,
+        lastName,
+        socialLinks,
         email,
         city,
         zipCode,

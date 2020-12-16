@@ -98,6 +98,13 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 
     const schema = Joi.object().keys({
       username: Joi.string().min(5).max(20),
+      firstName: Joi.string().min(5).max(20),
+      lastName: Joi.string().min(5).max(20),
+      socialLinks: Joi.object().keys({
+        faceBook: Joi.string().uri().allow(""),
+        instagram: Joi.string().uri().allow(""),
+        youtube: Joi.string().uri().allow(""),
+      }),
       availability: Joi.string(),
       city: Joi.string().max(20),
       zipCode: Joi.string(),
@@ -140,6 +147,9 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       req.query.id,
       {
         username: req.body.username,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        socialLinks: req.body.socialLinks,
         availability: req.body.availability,
         city: req.body.city,
         zipCode: req.body.zipCode,
@@ -163,10 +173,14 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 
 // Delete profile
 exports.deleteProfile = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.query.id, {
-    isDeleted: true,
-  });
-  res.status(200).json({ user: user });
+  try {
+    const user = await User.findByIdAndUpdate(req.query.id, {
+      isDeleted: true,
+    });
+    res.status(200).json({ user: user });
+  } catch (err) {
+    next(err);
+  }
 });
 
 //// Comments ////
@@ -244,32 +258,36 @@ exports.ownedProjects = asyncHandler(async (req, res, next) => {
 
 // Indicating what type of Projects User is interested In //
 exports.Interests = asyncHandler(async (req, res, next) => {
-  const userID = req.user.id;
-  const interest = req.body.interest;
+  try {
+    const userID = req.user.id;
+    const interest = req.body.interest;
 
-  const user = await User.findById(userID);
-  const interests = user.interests;
-  if (interests == "") {
-    await User.findByIdAndUpdate(userID, {
-      $push: { interests: interest },
-    });
-    res.status(200).json({ message: "Interest added successfully" });
-    return;
-  }
-  interests.map(async (val) => {
-    if (interest == val) {
-      res.status(400).json({
-        message: "You have already added this Category to your Interest",
-      });
-      return;
-    } else {
+    const user = await User.findById(userID);
+    const interests = user.interests;
+    if (interests == "") {
       await User.findByIdAndUpdate(userID, {
         $push: { interests: interest },
       });
       res.status(200).json({ message: "Interest added successfully" });
       return;
     }
-  });
+    interests.map(async (val) => {
+      if (interest == val) {
+        res.status(400).json({
+          message: "You have already added this Category to your Interest",
+        });
+        return;
+      } else {
+        await User.findByIdAndUpdate(userID, {
+          $push: { interests: interest },
+        });
+        res.status(200).json({ message: "Interest added successfully" });
+        return;
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // recommend user skills //

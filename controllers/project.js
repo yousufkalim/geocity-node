@@ -1,16 +1,9 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 const Joi = require("joi");
-const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
-const Skill = require("../models/Skill");
 const Material = require("../models/Material");
-const { updateOne } = require("../models/User");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -35,7 +28,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      // speciality: Joi.string().max(20),
+      speciality: Joi.string().max(20).allow(""),
     });
 
     const addressSchema = Joi.object().keys({
@@ -172,7 +165,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      // speciality: Joi.string().max(20),
+      speciality: Joi.string().max(20).allow(""),
     });
 
     const schema = Joi.object().keys({
