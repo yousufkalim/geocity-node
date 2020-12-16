@@ -28,7 +28,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      // speciality: Joi.string().max(20),
+      speciality: Joi.string().max(20).allow(""),
     });
 
     const addressSchema = Joi.object().keys({
@@ -165,7 +165,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
-      // speciality: Joi.string().max(20),
+      speciality: Joi.string().max(20).allow(""),
     });
 
     const schema = Joi.object().keys({
