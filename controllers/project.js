@@ -221,7 +221,7 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
           },
         },
       },
-      { $set: { "implementation_steps.0": step } },
+      { $set: { "implementation_steps.$": step } },
       { new: true }
     );
     res.status(200).json({
@@ -588,7 +588,7 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
         .json({ message: "you are not authorized to delete this project" });
       return;
     }
-    if (contributingUsers) {
+    if (contributingUsers.length > 0) {
       contributingUsers.map(async function (val) {
         val.map(async function (val1) {
           const user = await User.findByIdAndUpdate(val1, {
