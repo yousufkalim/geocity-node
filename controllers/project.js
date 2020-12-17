@@ -945,6 +945,80 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
   }
 });
 
+// Accept and Decline Invite by Project Owner //
+exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
+  try {
+    const decision = req.body.decision;
+    const projectID = req.query.id;
+    const stepID = req.body.step;
+    const project = await Project.findById(projectID);
+    const userID = req.user.id;
+    const invitationID = req.body.invitation;
+    const invitation = await Invitation.findById(invitationID);
+
+    const receiver = await User.findById(invitation.receiver);
+    const sender = await User.findById(invitation.sender);
+
+    if (decision == "Accepted") {
+      await Project.findOneAndUpdate(
+        {
+          _id: projectID,
+          implementation_steps: {
+            $elemMatch: {
+              _id: stepID,
+            },
+          },
+        },
+        {
+          $push: {
+            "implementation_steps.$.contributing_user": sender,
+          },
+        },
+        { new: true }
+      )
+        .then(async () => {
+          await Invitation.findByIdAndDelete(invitationID).then(async () => {
+            await User.findByIdAndUpdate(sender, {
+              $pull: { invitation: invitationID },
+              $push: { projects: projectID },
+            });
+          });
+        })
+        .then(async () => {
+          await User.findByIdAndUpdate(sender, {
+            $push: {
+              notifications: {
+                title: "Invitation Accepted",
+                description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+              },
+            },
+          });
+        });
+      res.status(200).json({ message: "Invitation Accepted!" });
+    } else if (decision == "Decline") {
+      await Invitation.findByIdAndDelete(invitationID)
+        .then(async () => {
+          await User.findByIdAndUpdate(sender, {
+            $pull: { invitation: invitationID },
+          });
+        })
+        .then(async () => {
+          await User.findByIdAndUpdate(sender, {
+            $push: {
+              notifications: {
+                title: "Invitation Declined",
+                description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+              },
+            },
+          });
+        });
+      res.status(200).json({ message: "Invitation Declined!" });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Accept and Decline request to view Project //
 exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
   try {
