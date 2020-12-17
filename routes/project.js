@@ -51,6 +51,7 @@ const {
   SearchCollaboratorsByMaterial,
   SearchCollaboratorsByCategory,
   editImplementationStep,
+  sendInvitetoProjectOwner,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -123,6 +124,13 @@ router.post(
   "/view-project/invite-collaborator/decison",
   protect,
   inviteCollaboratorDecision
+);
+
+// Send Invite by collaborators  to collaborate
+router.post(
+  "/view-project/sendInviteToCollaborate",
+  protect,
+  sendInvitetoProjectOwner
 );
 
 //// Delete users to contribute against a single step ////

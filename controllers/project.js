@@ -332,46 +332,59 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
     const project = req.query.id;
     const targeted_project = await Project.findById(project);
     const receiver = targeted_project.project_owner;
-    const newInvitation = new Invitation({
-      sender: sender,
-      receiver: receiver,
+
+    // check if user already sent invitation
+    const userInvitations = await Invitation.find({
+      type: "viewProject",
+      sender: req.user.id,
       projectID: project,
     });
-    newInvitation
-      .save()
-      .then(
-        await Project.findByIdAndUpdate(req.query.id, {
-          $push: { invitation: newInvitation._id },
-        })
-      )
-      .then(
-        await User.findByIdAndUpdate(receiver, {
-          $push: { invitation: newInvitation._id },
-        })
-      )
-      .then(
-        await User.findByIdAndUpdate(sender, {
-          $push: { invitation: newInvitation.id },
-        })
-      )
-      .then(
-        await User.findByIdAndUpdate(receiver, {
-          $push: {
-            notifications: {
-              title: "Request to View Project",
-              description: "Someone Requested to view your Project",
+    if (userInvitations) {
+      res.status(400).json({
+        message: "You have already sent request to view this project",
+      });
+    } else {
+      const newInvitation = new Invitation({
+        type: "viewProject",
+        sender: sender,
+        receiver: receiver,
+        projectID: project,
+      });
+      newInvitation
+        .save()
+        .then(
+          await Project.findByIdAndUpdate(req.query.id, {
+            $push: { invitation: newInvitation._id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: { invitation: newInvitation._id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(sender, {
+            $push: { invitation: newInvitation.id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: {
+              notifications: {
+                title: "Request to View Project",
+                description: "Someone Requested to view your Project",
+              },
             },
-          },
-        })
-      );
-    res.status(200).json({ Invitation: newInvitation });
+          })
+        );
+      res.status(200).json({ Invitation: newInvitation });
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-//// Invite users to contribute ////
-
+// Send Invite by collaborators  to collaborate
 exports.InviteUser = asyncHandler(async (req, res, next) => {
   try {
     const senderID = req.user.id;
@@ -386,44 +399,130 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
     const sender = await User.findById(senderID);
     const sender_name = sender.username;
 
-    const newInvitation = new Invitation({
-      sender: senderID,
-      receiver: receiver,
-      projectID: projectID,
-      skillID: skill,
-      stepID: stepID,
+    // check if project owner already sent invitation to user
+    const userInvitations = await Invitation.find({
+      $and: [
+        { type: "inviteCollaborator" },
+        { sender: req.user.id },
+        { projectID: project },
+        { receiver: req.body.receiver },
+      ],
     });
-    await newInvitation
-      .save()
-      .then(
-        await User.findByIdAndUpdate(receiver, {
-          $push: { invitation: newInvitation.id },
-        })
-      )
-      .then(
-        await User.findByIdAndUpdate(senderID, {
-          $push: { invitation: newInvitation.id },
-        })
-      )
-      .then(
-        await User.findByIdAndUpdate(receiver, {
-          $push: {
-            notifications: {
-              title: "You are Invited to Collaborate on " + title,
-              description:
-                sender_name + " Invited you to collaborate on " + title,
+    if (userInvitations.length > 0) {
+      res.status(400).json({
+        message: "You have already invited this collaborator",
+        Invitations: userInvitations,
+      });
+    } else {
+      const newInvitation = new Invitation({
+        type: "inviteCollaborator",
+        sender: senderID,
+        receiver: receiver,
+        projectID: projectID,
+        skillID: skill,
+        stepID: stepID,
+      });
+
+      await newInvitation
+        .save()
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: { invitation: newInvitation.id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(senderID, {
+            $push: { invitation: newInvitation.id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: {
+              notifications: {
+                title: "You are Invited to Collaborate on " + title,
+                description:
+                  sender_name + " Invited you to collaborate on " + title,
+              },
             },
-          },
-        })
-      );
-    res.status(200).json({ Invitation: newInvitation });
+          })
+        );
+      res.status(200).json({ Invitation: newInvitation });
+    }
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Send Invite by collaborators  to collaborate
+exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
+  try {
+    const senderID = req.user.id;
+    const projectID = req.query.id;
+    const stepID = req.body.stepID;
+
+    const project = await Project.findById(projectID);
+    const receiver = project.project_owner;
+    const title = project.title;
+
+    const sender = await User.findById(senderID);
+    const sender_name = sender.username;
+
+    // check if collaborator already sent invitation to project owner
+    const userInvitations = await Invitation.find({
+      $and: [
+        { type: "inviteProjectOwner" },
+        { sender: req.user.id },
+        { projectID: project },
+        { receiver: receiver },
+        { stepID: stepID },
+      ],
+    });
+    if (userInvitations.length > 0) {
+      console.log("hello");
+      res.status(400).json({
+        message:
+          "You have already sent request to collaborate against this step",
+        Invitations: userInvitations,
+      });
+    } else {
+      const newInvitation = new Invitation({
+        type: "inviteProjectOwner",
+        sender: senderID,
+        receiver: receiver,
+        projectID: projectID,
+        stepID: stepID,
+      });
+
+      await newInvitation
+        .save()
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: { invitation: newInvitation.id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(senderID, {
+            $push: { invitation: newInvitation.id },
+          })
+        )
+        .then(
+          await User.findByIdAndUpdate(receiver, {
+            $push: {
+              notifications: {
+                title: "Someone has requested to collaborate on " + title,
+                description: "Someone has requested to collaborate on " + title,
+              },
+            },
+          })
+        );
+      res.status(200).json({ Invitation: newInvitation });
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
 // Delete Contributors from a single Step //
-
 exports.deleteContributor = asyncHandler(async (req, res, next) => {
   try {
     const projectID = req.query.id;

@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const InvitationSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["viewProject", "inviteCollaborator", "inviteProjectOwner"],
+  },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

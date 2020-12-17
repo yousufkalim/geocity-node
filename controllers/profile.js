@@ -100,7 +100,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       username: Joi.string().min(5).max(20),
       firstName: Joi.string().min(5).max(20),
       lastName: Joi.string().min(5).max(20),
-      faceBook: Joi.string().uri().allow(""),
+      facebook: Joi.string().uri().allow(""),
       instagram: Joi.string().uri().allow(""),
       youtube: Joi.string().uri().allow(""),
       availability: Joi.string(),
