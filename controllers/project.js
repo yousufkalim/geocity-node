@@ -8,11 +8,11 @@ const Material = require("../models/Material");
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
   try {
-    const address = JSON.parse(req.body.address);
-    const implementation_steps1 = JSON.parse(req.body.implementation_steps);
-    const body = req.body;
-    body.address = address;
-    body.implementation_steps = implementation_steps1;
+    // const address = JSON.parse(req.body.address);
+    // const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+    // const body = req.body;
+    // body.address = address;
+    // body.implementation_steps = implementation_steps1;
 
     // body
     // file = req.file
@@ -61,7 +61,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       project_owner: Joi.string(),
     });
 
-    const results = schema.validate(body);
+    const results = schema.validate(req.body);
     if (results.error) {
       return res.status(400).send(results.error.details[0].message);
     }
@@ -96,21 +96,22 @@ exports.createProject = asyncHandler(async (req, res, next) => {
                 .then(await val.material.push(newMaterial._id));
             }
           }
-
-          steps_Progress.push(val.status);
-          if (steps_Progress) {
-            const size = steps_Progress.length;
-
-            for (var i = 0; i < steps_Progress.length; i++) {
-              var num = steps_Progress[i];
-              counts[num] = counts[num] ? counts[num] + 1 : 1;
-            }
-            var completed_Steps = counts["completed"];
-            let result = (completed_Steps / size) * 100 || 0;
-            progress = result + "%";
-          }
         })
       );
+      await steps.map(async (item) => {
+        steps_Progress.push(item.status);
+      });
+      if (steps_Progress) {
+        const size = steps_Progress.length;
+
+        for (var i = 0; i < steps_Progress.length; i++) {
+          var num = steps_Progress[i];
+          counts[num] = counts[num] ? counts[num] + 1 : 1;
+        }
+        var completed_Steps = counts["completed"];
+        let result = (completed_Steps / size) * 100 || 0;
+        progress = result + "%";
+      }
     }
 
     // If project has not assigned City //
@@ -125,7 +126,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       title: req.body.title,
       type: req.body.type,
       address: req.body.address,
-      progress: req.body.progress,
       general_photo: uploaded_Picture || "default.png",
       general_description: req.body.general_description,
       implementation_steps: steps,
@@ -206,12 +206,29 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
     let stepID = req.body.id;
     let projectID = req.query.id;
 
+    let progress = "";
+    const steps_Progress = [];
+    var counts = {};
+
     const project = await Project.findById(projectID);
     const steps = project.implementation_steps;
     let step = steps.find((item) => item.id === stepID);
     step = req.body.step;
     step._id = stepID;
+    await steps.map(async (item) => {
+      steps_Progress.push(item.status);
+    });
+    if (steps_Progress) {
+      const size = steps_Progress.length;
 
+      for (var i = 0; i < steps_Progress.length; i++) {
+        var num = steps_Progress[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var completed_Steps = counts["completed"];
+      let result = (completed_Steps / size) * 100 || 0;
+      progress = result + "%";
+    }
     const updatedProject = await Project.findOneAndUpdate(
       {
         _id: projectID,
@@ -221,7 +238,7 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
           },
         },
       },
-      { $set: { "implementation_steps.$": step } },
+      { $set: { "implementation_steps.$": step, progress: progress } },
       { new: true }
     );
     res.status(200).json({
@@ -255,6 +272,9 @@ exports.ViewProject = asyncHandler(async (req, res, next) => {
       },
       {
         path: "project_owner",
+      },
+      {
+        path: "comments",
       },
     ];
     const project = await Project.findById(req.query.id).populate(
@@ -335,11 +355,13 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
 
     // check if user already sent invitation
     const userInvitations = await Invitation.find({
-      type: "viewProject",
-      sender: req.user.id,
-      projectID: project,
+      $and: [
+        { type: "viewProject" },
+        { sender: req.user.id },
+        { projectID: project },
+      ],
     });
-    if (userInvitations) {
+    if (userInvitations > 0) {
       res.status(400).json({
         message: "You have already sent request to view this project",
       });
