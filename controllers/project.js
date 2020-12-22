@@ -274,7 +274,8 @@ exports.ViewProject = asyncHandler(async (req, res, next) => {
         path: "project_owner",
       },
       {
-        path: "comments",
+        path: "comments.user",
+        model: "User",
       },
     ];
     const project = await Project.findById(req.query.id).populate(
@@ -361,7 +362,7 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
         { projectID: project },
       ],
     });
-    if (userInvitations > 0) {
+    if (userInvitations.length > 0) {
       res.status(400).json({
         message: "You have already sent request to view this project",
       });
