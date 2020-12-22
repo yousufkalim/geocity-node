@@ -8,11 +8,11 @@ const Material = require("../models/Material");
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
   try {
-    // const address = JSON.parse(req.body.address);
-    // const implementation_steps1 = JSON.parse(req.body.implementation_steps);
-    // const body = req.body;
-    // body.address = address;
-    // body.implementation_steps = implementation_steps1;
+    const address = JSON.parse(req.body.address);
+    const implementation_steps1 = JSON.parse(req.body.implementation_steps);
+    const body = req.body;
+    body.address = address;
+    body.implementation_steps = implementation_steps1;
 
     // body
     // file = req.file
@@ -76,7 +76,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     } = req.body;
 
     // Check if the Material are in database or not, If Not then saving them in the database//
-    var steps = req.body.implementation_steps;
+    var steps = implementation_steps1;
     let progress = "";
     const steps_Progress = [];
     var counts = {};
