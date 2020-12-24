@@ -269,27 +269,21 @@ exports.Interests = asyncHandler(async (req, res, next) => {
 
     const user = await User.findById(userID);
     const interests = user.interests;
-    if (interests == "") {
+
+    if (interests.length > 0) {
+      interests.map(async (val) => {
+        if (interest == val) {
+          res.status(400).json({
+            message: "You have already added this Category to your Interest",
+          });
+        }
+      });
+    } else {
       await User.findByIdAndUpdate(userID, {
         $push: { interests: interest },
       });
       res.status(200).json({ message: "Interest added successfully" });
-      return;
     }
-    interests.map(async (val) => {
-      if (interest == val) {
-        res.status(400).json({
-          message: "You have already added this Category to your Interest",
-        });
-        return;
-      } else {
-        await User.findByIdAndUpdate(userID, {
-          $push: { interests: interest },
-        });
-        res.status(200).json({ message: "Interest added successfully" });
-        return;
-      }
-    });
   } catch (err) {
     next(err);
   }
