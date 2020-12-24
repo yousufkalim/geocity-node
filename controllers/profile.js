@@ -85,6 +85,8 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     const picture = req.file;
     if (picture) {
       var uploaded_Picture = req.file.filename;
+    } else {
+      uploaded_Picture = req.body.profile_picture;
     }
 
     const nestedSchema = Joi.object().keys({
