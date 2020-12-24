@@ -61,21 +61,28 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
   res.status(200).json({ user: user });
 =======
     const nestedSchema = Joi.object().keys({
-      skillField: Joi.string().max(20),
+      skillField: Joi.string().required(),
+      skill: Joi.string().required(),
       specialization: Joi.string().max(20),
-      score: Joi.number().max(20),
+      score: Joi.string()
+        .max(5)
+        .pattern(/^[0-5]+$/)
+        .required(),
     });
     let services = Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
-      username: Joi.string().min(5).max(20),
-      firstName: Joi.string().min(5).max(20),
-      lastName: Joi.string().min(5).max(20),
-      city: Joi.string().max(20),
+      username: Joi.string().required(),
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
+      city: Joi.string(),
+      zipCode: Joi.string(),
+      latitude: Joi.string(),
+      longitude: Joi.string(),
       profile_picture: Joi.string().max(255),
-      profile_description: Joi.string().max(600),
+      profile_description: Joi.string().min(10).max(600),
       skills: services,
-      material: Joi.array().items(Joi.string()),
+      material: Joi.array().min(1).items(Joi.string()),
     });
 
     const user = await User.findByIdAndUpdate(
@@ -85,10 +92,13 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         city: req.body.city,
+        zipCode: req.body.zipCode,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
         profile_description: req.body.profile_description,
         profile_picture: uploaded_Picture || "default.png",
         skills: req.body.skills,
-        $push: { material: req.body.material },
+        material: req.body.material,
       },
       { new: true }
     );
