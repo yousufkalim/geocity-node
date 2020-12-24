@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Material = require("../models/Material");
+const { isValidObjectId } = require("mongoose");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -501,7 +502,6 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
       ],
     });
     if (userInvitations.length > 0) {
-      console.log("hello");
       res.status(400).json({
         message:
           "You have already sent request to collaborate against this step",
@@ -611,7 +611,8 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
         .json({ message: "you are not authorized to delete this project" });
       return;
     }
-    if (contributingUsers.length > 0) {
+
+    if (typeof contributingUsers[0][0] !== "") {
       contributingUsers.map(async function (val) {
         val.map(async function (val1) {
           const user = await User.findByIdAndUpdate(val1, {

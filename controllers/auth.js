@@ -23,35 +23,38 @@ exports.register = asyncHandler(async (req, res, next) => {
 
     // Validation
     const nestedSchema = Joi.object().keys({
-      skillField: Joi.string().max(30),
-      skill: Joi.string(),
-      specialization: Joi.string().max(20).allow(""),
-      score: Joi.number().max(5),
+      skillField: Joi.string().required(),
+      skill: Joi.string().required(),
+      specialization: Joi.string().allow(""),
+      score: Joi.string()
+        .max(5)
+        .pattern(/^[0-5]+$/)
+        .required(),
     });
 
     const schema = Joi.object().keys({
-      username: Joi.string().min(5).max(20),
-      firstName: Joi.string().min(5).max(20),
-      lastName: Joi.string().min(5).max(20),
+      username: Joi.string().required(),
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
       facebook: Joi.string().uri().allow(""),
       instagram: Joi.string().uri().allow(""),
       youtube: Joi.string().uri().allow(""),
-      email: Joi.string().max(40).email(),
+      email: Joi.string().max(255).email(),
       city: Joi.string(),
       zipCode: Joi.string(),
       latitude: Joi.string(),
       longitude: Joi.string(),
       password: Joi.string().min(6).max(255),
-      availability: Joi.string().min(6).max(255),
+      availability: Joi.string(),
       confirm_password: Joi.string().min(6).max(255),
       profile_picture: Joi.string().max(255),
-      profile_description: Joi.string().max(600),
+      profile_description: Joi.string().min(10).max(600),
       phone: Joi.string()
         .max(10)
-        .pattern(/^[0-9]+$/),
+        .pattern(/^[0-9]+$/)
+        .required(),
       skills: Joi.array().max(3).items(nestedSchema),
-      material: Joi.array().max(50).items(Joi.string()),
-      notifications: Joi.array(),
+      material: Joi.array().max(50).min(1).items(Joi.string()),
     });
 
     const results = schema.validate(body);

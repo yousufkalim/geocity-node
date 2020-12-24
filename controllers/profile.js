@@ -88,18 +88,21 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     }
 
     const nestedSchema = Joi.object().keys({
-      skillField: Joi.string().max(30),
-      skill: Joi.string(),
+      skillField: Joi.string().required(),
+      skill: Joi.string().required(),
       specialization: Joi.string().max(20),
-      score: Joi.number().max(5),
+      score: Joi.string()
+        .max(5)
+        .pattern(/^[0-5]+$/)
+        .required(),
     });
 
     let services = Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
-      username: Joi.string().min(5).max(20),
-      firstName: Joi.string().min(5).max(20),
-      lastName: Joi.string().min(5).max(20),
+      username: Joi.string().required(),
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
       facebook: Joi.string().uri().allow(""),
       instagram: Joi.string().uri().allow(""),
       youtube: Joi.string().uri().allow(""),
@@ -114,7 +117,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
         .max(10)
         .pattern(/^[0-9]+$/),
       skills: Joi.array().max(3).items(nestedSchema),
-      material: Joi.array().max(50).items(Joi.string()),
+      material: Joi.array().max(50).min(1).items(Joi.string()),
     });
 
     const results = schema.validate(body);
