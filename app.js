@@ -17,10 +17,6 @@ require("./jobs/agenda");
 
 app.use(bodyParser.json());
 app.use(cors());
-<<<<<<< HEAD
-
-=======
->>>>>>> 0f67acd3ad05bdc1ef56663580c97bda1f0620c3
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //// Cookie Parser ////
@@ -72,11 +68,6 @@ app.use("/api/v1/profile", profile);
 app.use("/api/v1/project", project);
 app.use("/api/v1/admin", admin);
 
-<<<<<<< HEAD
-//// Setting Port for Server ////
-
-const PORT = 3000 || process.env.PORT;
-=======
 //// Error Handler
 app.use((error, req, res, next) => {
   console.log("Main Error =>", error);
@@ -86,8 +77,7 @@ app.use((error, req, res, next) => {
 });
 
 //// Setting Port for Server ////
-const PORT = 5000 || process.env.PORT;
->>>>>>> 0f67acd3ad05bdc1ef56663580c97bda1f0620c3
+const PORT = 3000 || process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
 });

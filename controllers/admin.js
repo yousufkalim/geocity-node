@@ -29,37 +29,6 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
       var uploaded_Picture = req.file.filename;
     }
 
-<<<<<<< HEAD
-  const nestedSchema = Joi.object().keys({
-    skillField: Joi.string().max(20),
-    specialization: Joi.string().max(20),
-    score: Joi.number().max(20),
-  });
-  let services = Joi.array().max(3).items(nestedSchema);
-
-  const schema = Joi.object().keys({
-    username: Joi.string().min(5).max(20),
-    city: Joi.string().max(20),
-    profile_picture: Joi.string().max(255),
-    profile_description: Joi.string().max(600),
-    skills: services,
-    material: Joi.array().items(Joi.string()),
-  });
-
-  const user = await User.findByIdAndUpdate(
-    req.query.id,
-    {
-      username: req.body.username,
-      city: req.body.city,
-      profile_description: req.body.profile_description,
-      profile_picture: uploaded_Picture || "default.png",
-      skills: req.body.skills,
-      $push: { material: req.body.material },
-    },
-    { new: true }
-  );
-  res.status(200).json({ user: user });
-=======
     const nestedSchema = Joi.object().keys({
       skillField: Joi.string().required(),
       skill: Joi.string().required(),
@@ -106,7 +75,6 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
 });
 
 // DELETE USERS //
@@ -123,15 +91,6 @@ exports.DeleteUser = asyncHandler(async (req, res, next) => {
 
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  await Project.find({ isDeleted: false }, function (err, docs) {
-    if (err) res.json(err);
-    else
-      res.status(200).json({
-        projects: docs,
-      });
-  });
-=======
   try {
     await Project.find({ isDeleted: false }, function (err, docs) {
       if (err) res.json(err);
@@ -143,7 +102,6 @@ exports.ProjectsList = asyncHandler(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
 });
 
 // EDIT PROJECTS //
@@ -167,23 +125,6 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
 
     let services = Joi.array().items(nestedSchema);
 
-<<<<<<< HEAD
-  //// Updating Implementation Steps Array ////
-
-  const project = await Project.findByIdAndUpdate(
-    req.query.id,
-    {
-      title: req.body.title,
-      type: req.body.type,
-      progress: req.body.progress,
-      general_description: req.body.general_description,
-      general_photo: uploaded_Picture || "default.png",
-      implementation_steps: req.body.implementation_steps,
-    },
-    { new: true }
-  );
-  res.status(200).json({ project: project });
-=======
     const schema = Joi.object().keys({
       title: Joi.string().min(5).max(40),
       type: Joi.string(),
@@ -217,7 +158,6 @@ exports.EditProject = asyncHandler(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
 });
 
 // DELETE PROJECTS //
@@ -249,22 +189,6 @@ exports.getAllCategories = asyncHandler(async (req, res, next) => {
 
 // Create Project Category//
 exports.CreateCategory = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  const { name, color } = req.body;
-
-  //// Check If Category exists with this name or not ////
-
-  const result = await Category.findOne({ name: name });
-  if (result) {
-    res.status(400).send("Category name already exists");
-  } else {
-    // Saving Category in DataBase
-    const category = await Category.create({
-      name,
-      color,
-    });
-    res.status(200).json({ category: category });
-=======
   try {
     const { name, color } = req.body;
 
@@ -283,31 +207,11 @@ exports.CreateCategory = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
 // Edit Project Category //
 exports.EditCategory = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  const { name, color } = req.body;
-
-  //// Check If Category exists with this name or not ////
-
-  const result = await Category.findOne({ name: name });
-  if (result) {
-    res.status(400).send("Category name already exists");
-  } else {
-    const category = await Category.findByIdAndUpdate(
-      req.query.id,
-      {
-        name: req.body.name,
-        color: req.body.color,
-      },
-      { new: true }
-    );
-    res.status(200).json({ category: category });
-=======
   try {
     const { name, color } = req.body;
 
@@ -329,7 +233,6 @@ exports.EditCategory = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
@@ -347,15 +250,6 @@ exports.DeleteCategory = asyncHandler(async (req, res, next) => {
 
 // Get All Skills //
 exports.getAllSkills = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  await Skill.find({ isDeleted: false }, function (err, docs) {
-    if (err) res.json(err);
-    else
-      res.status(200).json({
-        skills: docs,
-      });
-  });
-=======
   try {
     await Skill.find({ isDeleted: false }, function (err, docs) {
       if (err) res.json(err);
@@ -367,7 +261,6 @@ exports.getAllSkills = asyncHandler(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
 });
 
 // Create SkillField //
@@ -377,17 +270,6 @@ exports.CreateSkillField = asyncHandler(async (req, res, next) => {
 
     //// Check If Skill exists with this name or not ////
 
-<<<<<<< HEAD
-  const result = await Skill.findOne({ skillField: skillField });
-  if (result) {
-    res.status(400).send("SkillField already exists");
-  } else {
-    // Saving Skill in DataBase
-    const skill = await Skill.create({
-      skillField: skillField,
-    });
-    res.status(200).json({ skillField: skillField });
-=======
     const result = await Skill.findOne({ skillField: skillField });
     if (result) {
       res.status(400).send("SkillField already exists");
@@ -400,46 +282,11 @@ exports.CreateSkillField = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
 // Edit SkillField //
 exports.EditSkillField = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  const { skillField, skills } = req.body;
-
-  const skillFieldID = req.query.id;
-  //// Check If SkillField exists with this name or not ////
-  if (skillField) {
-    const result = await Skill.findOne({ skillField: skillField });
-    if (result) {
-      res.status(400).send("SkillField already exists");
-      return;
-    } else {
-      const skill = await Skill.findByIdAndUpdate(
-        req.query.id,
-        {
-          skillField: skillField,
-        },
-        { new: true }
-      );
-    }
-  }
-  if (skills == undefined) {
-    res.status(200).json({ message: "SkillField Updated Successfully" });
-    return;
-  } else {
-    const result = await Skill.find({ id: skillFieldID, skill: skills });
-    if (result.length == 0) {
-      await Skill.findByIdAndUpdate(skillFieldID, {
-        skill: skills,
-      });
-      return res.status(200).json({ message: "Skill Updated successfully" });
-    } else {
-      res.status(400).json({ message: "Skill name Already Exists" });
-    }
-=======
   try {
     const { skillField, skills } = req.body;
 
@@ -476,7 +323,6 @@ exports.EditSkillField = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
@@ -494,21 +340,6 @@ exports.DeleteSkillField = asyncHandler(async (req, res, next) => {
 
 // Create Skill //
 exports.CreateSkill = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  const skillFieldID = req.query.id;
-  const skill = req.body.skill;
-
-  const result = await Skill.findOne({
-    $and: [{ _id: skillFieldID, skill: skill }],
-  });
-  if (result) {
-    res.status(403).json({ message: "Skill Name already exists" });
-  } else {
-    await Skill.findByIdAndUpdate(skillFieldID, {
-      $push: { skill: skill },
-    });
-    res.status(200).json({ message: "Skill added in SkillField Successfully" });
-=======
   try {
     const skillFieldID = req.query.id;
     const skill = req.body.skill;
@@ -528,7 +359,6 @@ exports.CreateSkill = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
@@ -539,17 +369,6 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
 
     //// Check If Material exists with this name or not ////
 
-<<<<<<< HEAD
-  const result = await Material.findOne({ name: name });
-  if (result) {
-    res.status(400).send("Material name already exists");
-  } else {
-    // Saving Material in DataBase
-    const material = await Material.create({
-      name: req.body.name,
-    });
-    res.status(200).json({ material: material });
-=======
     const result = await Material.findOne({ name: name });
     if (result) {
       res.status(400).send("Material name already exists");
@@ -562,21 +381,11 @@ exports.CreateMaterial = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
 // Get All Materials //
 exports.getAllMaterials = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  await Material.find({ isDeleted: false }, function (err, docs) {
-    if (err) res.json(err);
-    else
-      res.status(200).json({
-        materials: docs,
-      });
-  });
-=======
   try {
     await Material.find({ isDeleted: false }, function (err, docs) {
       if (err) res.json(err);
@@ -588,29 +397,10 @@ exports.getAllMaterials = asyncHandler(async (req, res, next) => {
   } catch (err) {
     next(err);
   }
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
 });
 
 // Edit Material //
 exports.EditMaterial = asyncHandler(async (req, res, next) => {
-<<<<<<< HEAD
-  const { name } = req.body;
-
-  //// Check If Category exists with this name or not ////
-
-  const result = await Material.findOne({ name: name });
-  if (result) {
-    res.status(400).send("Material name already exists");
-  } else {
-    const material = await Material.findByIdAndUpdate(
-      req.query.id,
-      {
-        name: req.body.name,
-      },
-      { new: true }
-    );
-    res.status(200).json({ material: material });
-=======
   try {
     const { name } = req.body;
 
@@ -631,7 +421,6 @@ exports.EditMaterial = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     next(err);
->>>>>>> b430d0d4d1b5b16d81e9d92e43db7a5bc9015705
   }
 });
 
