@@ -312,3 +312,23 @@ exports.recommendUserSkill = asyncHandler(async (req, res, next) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+//Delete Comment
+exports.deleteComment = asyncHandler(async (req, res, next) => {
+  try {
+    const commentId = req.body.commentId;
+    const userId = req.query.id;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { comments: { _id: commentId } },
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Comment Deleted successfully", User: user });
+  } catch (err) {
+    next(err);
+  }
+});
