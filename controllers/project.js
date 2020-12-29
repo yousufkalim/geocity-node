@@ -611,8 +611,7 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
         .json({ message: "you are not authorized to delete this project" });
       return;
     }
-
-    if (typeof contributingUsers[0][0] !== "") {
+    if (contributingUsers[0][0] !== undefined) {
       contributingUsers.map(async function (val) {
         val.map(async function (val1) {
           const user = await User.findByIdAndUpdate(val1, {
@@ -1089,5 +1088,25 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+//Delete Comment
+exports.deleteComment = asyncHandler(async (req, res, next) => {
+  try {
+    const commentId = req.body.commentId;
+    const projectId = req.query.id;
+    const project = await Project.findByIdAndUpdate(
+      projectId,
+      {
+        $pull: { comments: { _id: commentId } },
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Comment Deleted successfully", project: project });
+  } catch (err) {
+    next(err);
   }
 });

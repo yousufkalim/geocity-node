@@ -53,6 +53,7 @@ const {
   editImplementationStep,
   sendInvitetoProjectOwner,
   inviteProjectOwnerDecision,
+  deleteComment,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -110,6 +111,8 @@ router.get("/totalLikes", protect, totalLikes);
 
 //// Comments Route ////
 router.post("/view-project/comment", protect, comment);
+// Delete Comment//
+router.post("/view-project/delete-comment", protect, deleteComment);
 
 //// Request to view a Project  ////
 router.post("/view-project/send-request", protect, RequestToView);
