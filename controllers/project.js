@@ -159,7 +159,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     if (picture) {
       var uploaded_Picture = req.file.filename;
     } else {
-      uploaded_Picture = req.body.profile_picture;
+      uploaded_Picture = req.body.general_photo;
     }
 
     //// Validation ////
