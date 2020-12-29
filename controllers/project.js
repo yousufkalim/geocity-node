@@ -158,6 +158,8 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     const picture = req.file;
     if (picture) {
       var uploaded_Picture = req.file.filename;
+    } else {
+      uploaded_Picture = req.body.profile_picture;
     }
 
     //// Validation ////
@@ -204,8 +206,8 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 //Edit Implementation Step
 exports.editImplementationStep = asyncHandler(async (req, res, next) => {
   try {
-    let stepID = req.body.id;
     let projectID = req.query.id;
+    let stepID = req.body.id;
 
     let progress = "";
     const steps_Progress = [];
@@ -213,23 +215,12 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
 
     const project = await Project.findById(projectID);
     const steps = project.implementation_steps;
+
     let step = steps.find((item) => item.id === stepID);
+
     step = req.body.step;
     step._id = stepID;
-    await steps.map(async (item) => {
-      steps_Progress.push(item.status);
-    });
-    if (steps_Progress) {
-      const size = steps_Progress.length;
 
-      for (var i = 0; i < steps_Progress.length; i++) {
-        var num = steps_Progress[i];
-        counts[num] = counts[num] ? counts[num] + 1 : 1;
-      }
-      var completed_Steps = counts["completed"];
-      let result = (completed_Steps / size) * 100 || 0;
-      progress = result + "%";
-    }
     const updatedProject = await Project.findOneAndUpdate(
       {
         _id: projectID,
@@ -239,9 +230,31 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
           },
         },
       },
-      { $set: { "implementation_steps.$": step, progress: progress } },
+      { $set: { "implementation_steps.$": step } },
       { new: true }
     );
+
+    const updatedSteps = updatedProject.implementation_steps;
+
+    await updatedSteps.map(async (item) => {
+      steps_Progress.push(item.status);
+    });
+    if (steps_Progress) {
+      const size = steps_Progress.length;
+
+      for (var i = 0; i < size; i++) {
+        var num = steps_Progress[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var completed_Steps = counts["completed"];
+      let result = (completed_Steps / size) * 100 || 0;
+      progress = result + "%";
+    }
+
+    await Project.findByIdAndUpdate(projectID, {
+      progress: progress,
+    });
+
     res.status(200).json({
       message: "Step has been updated Successfully",
       project: updatedProject,
