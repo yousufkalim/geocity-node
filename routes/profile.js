@@ -22,8 +22,8 @@ const {
   viewProfile,
   recommendUserSkill,
   ownedProjects,
-  deleteComment,
   Interests,
+  deleteComment,
 } = require("../controllers/profile");
 
 // middleware functions //

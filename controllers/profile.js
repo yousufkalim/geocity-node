@@ -91,10 +91,13 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     }
 
     const nestedSchema = Joi.object().keys({
-      skillField: Joi.string().max(30),
-      skill: Joi.string(),
-      specialization: Joi.string().max(20),
-      score: Joi.number().max(5),
+      skillField: Joi.string().required(),
+      skill: Joi.string().required(),
+      // specialization: Joi.string().max(20),
+      score: Joi.string()
+        .max(5)
+        .pattern(/^[0-5]+$/)
+        .required(),
     });
 
     let services = Joi.array().max(3).items(nestedSchema);
