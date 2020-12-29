@@ -22,6 +22,7 @@ const {
   viewProfile,
   recommendUserSkill,
   ownedProjects,
+  deleteComment,
   Interests,
 } = require("../controllers/profile");
 
@@ -51,7 +52,7 @@ router.get("/view-profile", protect, viewProfile);
 //// Comments Route ////
 router.post("/view-profile/comment", protect, comment);
 //Delete Comment//
-router.post("/view-profile/delete-comment", protect, comment);
+router.post("/view-profile/delete-comment", protect, deleteComment);
 
 // Projects list of User //
 router.get("/myProjects", protect, ownedProjects);

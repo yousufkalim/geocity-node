@@ -79,12 +79,15 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     const material1 = JSON.parse(req.body.material);
 
     const body = req.body;
+    console.log(req.body);
     body.skills = skills1;
     body.material = material1;
 
     const picture = req.file;
     if (picture) {
       var uploaded_Picture = req.file.filename;
+    } else {
+      uploaded_Picture = req.body.profile_picture;
     }
 
     const nestedSchema = Joi.object().keys({
@@ -186,6 +189,7 @@ exports.deleteProfile = asyncHandler(async (req, res, next) => {
 //// Comments ////
 
 exports.comment = asyncHandler(async (req, res, next) => {
+  // console.log(req.query.id, req.body.comment);
   try {
     const loggedUser = await User.findById(req.user.id);
     const userName = loggedUser.username;
@@ -313,6 +317,8 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
   try {
     const commentId = req.body.commentId;
     const userId = req.query.id;
+    console.log(userId, commentId);
+
     const user = await User.findByIdAndUpdate(
       userId,
       {
