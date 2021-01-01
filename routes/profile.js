@@ -24,6 +24,7 @@ const {
   ownedProjects,
   Interests,
   deleteComment,
+  forgetPassword,
 } = require("../controllers/profile");
 
 // middleware functions //
@@ -42,6 +43,9 @@ const User = require("../models/User");
 
 // Edit Profile //
 router.post("/editProfile", upload.single("profile_picture"), editProfile);
+
+// request for forget password //
+router.post("/request-forget-password", forgetPassword);
 
 // DELETE PROFILE //
 router.post("/delete-profile", protect, deleteProfile);

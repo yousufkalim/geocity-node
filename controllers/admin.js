@@ -266,7 +266,7 @@ exports.getAllSkills = asyncHandler(async (req, res, next) => {
 // Create SkillField //
 exports.CreateSkillField = asyncHandler(async (req, res, next) => {
   try {
-    const { skillField } = req.body;
+    const { skillField, skills } = req.body;
 
     //// Check If Skill exists with this name or not ////
 
@@ -277,8 +277,9 @@ exports.CreateSkillField = asyncHandler(async (req, res, next) => {
       // Saving Skill in DataBase
       const skill = await Skill.create({
         skillField: skillField,
+        skill: skills,
       });
-      res.status(200).json({ skillField: skillField });
+      res.status(200).json({ skillField: skillField, skills: skills });
     }
   } catch (err) {
     next(err);
