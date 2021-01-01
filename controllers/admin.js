@@ -289,7 +289,7 @@ exports.CreateSkillField = asyncHandler(async (req, res, next) => {
 exports.EditSkillField = asyncHandler(async (req, res, next) => {
   try {
     const { skillField, skills } = req.body;
-
+    console.log(req.body);
     const skillFieldID = req.query.id;
     //// Check If SkillField exists with this name or not ////
     if (skillField) {
