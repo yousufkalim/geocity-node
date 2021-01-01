@@ -54,6 +54,7 @@ const {
   sendInvitetoProjectOwner,
   inviteProjectOwnerDecision,
   deleteComment,
+  addImplementationStep,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -86,6 +87,9 @@ router.post(
   upload.single("general_photo"),
   editProject
 );
+//// ADD Implementation Step ////
+
+router.post("/add-step", protect, addImplementationStep);
 
 //// EDIT Implementation Step ////
 

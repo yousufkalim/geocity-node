@@ -4,7 +4,6 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Material = require("../models/Material");
-const { isValidObjectId } = require("mongoose");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -21,6 +20,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const picture = req.file;
     if (picture) {
       var uploaded_Picture = req.file.filename;
+    } else {
+      uploaded_Picture = "default.png";
     }
 
     //// Validation ////
@@ -127,7 +128,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       title: req.body.title,
       type: req.body.type,
       address: req.body.address,
-      general_photo: uploaded_Picture || "default.png",
+      general_photo: uploaded_Picture,
       general_description: req.body.general_description,
       implementation_steps: steps,
       category: req.body.category,
@@ -261,6 +262,27 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+//Add Implementation Step
+exports.addImplementationStep = asyncHandler(async (req, res, next) => {
+  try {
+    let projectID = req.query.id;
+    const step = req.body.step;
+
+    const project = await Project.findByIdAndUpdate(
+      projectID,
+      {
+        $push: { implementation_steps: step },
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Step added successfully", project: project });
+  } catch (err) {
+    next(err);
   }
 });
 

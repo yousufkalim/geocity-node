@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const Joi = require("joi");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
+const async = require("async");
+const crypto = require("crypto");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Skill = require("../models/Skill");
@@ -174,6 +176,98 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       .json({ message: "Profile Updated successfully", user: user });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+//Forget Password//
+exports.forgetPassword = asyncHandler(async (req, res, next) => {
+  try {
+    const email = req.body.email;
+
+    async.waterfall([
+      function (done) {
+        crypto.randomBytes(20, function (err, buf) {
+          var token = buf.toString("hex");
+          done(err, token);
+        });
+      },
+      function (token, done) {
+        User.findOne(
+          {
+            email: email,
+          },
+          async function (err, user) {
+            if (!user) {
+              res
+                .status(404)
+                .json({ message: "No account with that email address exists" });
+            }
+
+            const updatedUser = await User.findOneAndUpdate(
+              { email: email },
+              {
+                resetPasswordToken: token,
+                resetPasswordExpire: Date.now() + 36000000, // 1 hour
+              },
+              { new: true }
+            );
+            console.log(updatedUser);
+            // user.resetPasswordToken = token;
+            // user.resetPasswordExpire = Date.now() + 36000000; // 1 hour
+
+            // user.save(function (err) {
+            //   done(err, token, user);
+            // });
+          }
+        );
+      },
+      function (token, user, done) {
+        var smtpTransport = nodemailer.createTransport({
+          service: "Gmail",
+          auth: {
+            user: process.env.MailingId,
+            pass: process.env.MailingPassword,
+          },
+        });
+        var mailOptions = {
+          to: email,
+          from: process.env.MailingId,
+          subject: "NEXT Trading Password Reset",
+          text:
+            "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
+            "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
+            "http://" +
+            req.headers.host +
+            "/reset/" +
+            token +
+            "\n\n" +
+            "If you did not request this, please ignore this email and your password will remain unchanged.\n",
+        };
+        smtpTransport.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            return res.status(400).json({ message: error.message });
+          }
+        });
+      },
+    ]);
+    // router.get('/reset/:token', function (req, res) {
+    //   User.findOne({
+    //     resetPasswordToken: req.params.token,
+    //     resetPasswordExpire: {
+    //       $gt: Date.now()
+    //     }
+    //   }, function (err, user) {
+    //     if (!user) {
+    //       req.flash('error', 'Password reset token is invalid or has expired.');
+    //       return res.redirect('/forgot');
+    //     }
+    //     res.render('reset', {
+    //       token: req.params.token
+    //     });
+    //   });
+    // });
+  } catch (err) {
+    next(err);
   }
 });
 
