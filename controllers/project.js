@@ -95,7 +95,10 @@ exports.createProject = asyncHandler(async (req, res, next) => {
               });
               await newMaterial
                 .save()
-                .then(await val.material.push(newMaterial._id));
+                .then(
+                  console.log(material, "val.material"),
+                  await val.material.push(newMaterial._id)
+                );
             }
           }
         })
