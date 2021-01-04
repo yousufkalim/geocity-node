@@ -45,7 +45,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       name: Joi.string().max(20),
       skills: skillSchema,
       status: Joi.string(),
-      material: Joi.string(),
+      material: Joi.string().allow(""),
       materialName: Joi.string(),
       description: Joi.string().max(150),
       contributing_user: Joi.array().items(Joi.string()),
@@ -56,7 +56,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       type: Joi.string(),
       address: addressSchema,
       progress: Joi.string(),
-      general_photo: Joi.string().max(255),
       general_description: Joi.string().max(3000),
       implementation_steps: Joi.array().items(implementationStepsSchema),
       category: Joi.string(),
@@ -78,7 +77,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     } = req.body;
 
     // Check if the Material are in database or not, If Not then saving them in the database//
-    var steps = implementation_steps1;
+    var steps = req.body.implementation_steps;
     let progress = "";
     const steps_Progress = [];
     var counts = {};
@@ -93,12 +92,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
               const newMaterial = new Material({
                 name: requestedMaterial,
               });
-              await newMaterial
-                .save()
-                .then(
-                  console.log(material, "val.material"),
-                  await val.material.push(newMaterial._id)
-                );
+              await newMaterial.save().then((val.material = newMaterial._id));
             }
           }
         })
@@ -264,7 +258,7 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
       project: updatedProject,
     });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 });
 
@@ -274,6 +268,22 @@ exports.addImplementationStep = asyncHandler(async (req, res, next) => {
     let projectID = req.query.id;
     const step = req.body.step;
 
+    let progress = "";
+    const steps_Progress = [];
+    var counts = {};
+
+    if (step) {
+      const requestedMaterial = step.materialName;
+      if (requestedMaterial) {
+        const result = await Material.find({ name: requestedMaterial });
+        if (result.length == 0) {
+          const newMaterial = new Material({
+            name: requestedMaterial,
+          });
+          await newMaterial.save().then((step.material = newMaterial._id));
+        }
+      }
+    }
     const project = await Project.findByIdAndUpdate(
       projectID,
       {
@@ -281,9 +291,88 @@ exports.addImplementationStep = asyncHandler(async (req, res, next) => {
       },
       { new: true }
     );
+
+    // Project Progress //
+    const updatedSteps = project.implementation_steps;
+
+    await updatedSteps.map(async (item) => {
+      steps_Progress.push(item.status);
+    });
+    if (steps_Progress) {
+      const size = steps_Progress.length;
+
+      for (var i = 0; i < size; i++) {
+        var num = steps_Progress[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var completed_Steps = counts["completed"];
+      let result = (completed_Steps / size) * 100 || 0;
+      progress = result + "%";
+    }
+
+    await Project.findByIdAndUpdate(
+      projectID,
+      {
+        progress: progress,
+      },
+      { new: true }
+    );
+
     res
       .status(200)
       .json({ message: "Step added successfully", project: project });
+  } catch (err) {
+    next(err);
+  }
+});
+
+exports.deleteImplementationStep = asyncHandler(async (req, res, next) => {
+  try {
+    const projectID = req.query.id;
+    const stepID = req.body.id;
+
+    let progress = "";
+    const steps_Progress = [];
+    var counts = {};
+
+    const project = await Project.findByIdAndUpdate(
+      projectID,
+      {
+        $pull: {
+          implementation_steps: { _id: stepID },
+        },
+      },
+      { new: true }
+    );
+
+    // Project Progress //
+    const updatedSteps = project.implementation_steps;
+
+    await updatedSteps.map(async (item) => {
+      steps_Progress.push(item.status);
+    });
+    if (steps_Progress) {
+      const size = steps_Progress.length;
+
+      for (var i = 0; i < size; i++) {
+        var num = steps_Progress[i];
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      var completed_Steps = counts["completed"];
+      let result = (completed_Steps / size) * 100 || 0;
+      progress = result + "%";
+    }
+
+    await Project.findByIdAndUpdate(
+      projectID,
+      {
+        progress: progress,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ message: "Step Deleted Successfully", Project: project });
   } catch (err) {
     next(err);
   }

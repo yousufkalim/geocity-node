@@ -7,6 +7,7 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middlewares/async");
 const async = require("async");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const Skill = require("../models/Skill");
@@ -180,7 +181,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 });
 
 //Forget Password//
-exports.forgetPassword = asyncHandler(async (req, res, next) => {
+exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
   try {
     const email = req.body.email;
 
@@ -202,26 +203,20 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
                 .status(404)
                 .json({ message: "No account with that email address exists" });
             }
-
-            const updatedUser = await User.findOneAndUpdate(
+            const restPasswordExpires = Date.now() + 36000000;
+            var updatedUser = await User.findOneAndUpdate(
               { email: email },
               {
                 resetPasswordToken: token,
-                resetPasswordExpire: Date.now() + 36000000, // 1 hour
+                restPasswordExpires: restPasswordExpires,
               },
               { new: true }
             );
-            console.log(updatedUser);
-            // user.resetPasswordToken = token;
-            // user.resetPasswordExpire = Date.now() + 36000000; // 1 hour
-
-            // user.save(function (err) {
-            //   done(err, token, user);
-            // });
+            done(err, token, updatedUser);
           }
         );
       },
-      function (token, user, done) {
+      function (token, updatedUser, done) {
         var smtpTransport = nodemailer.createTransport({
           service: "Gmail",
           auth: {
@@ -232,7 +227,7 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
         var mailOptions = {
           to: email,
           from: process.env.MailingId,
-          subject: "NEXT Trading Password Reset",
+          subject: "Password Reset",
           text:
             "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
             "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
@@ -249,23 +244,71 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
           }
         });
       },
+      res.status(200).json({ message: "Email has been sent successfully" }),
     ]);
-    // router.get('/reset/:token', function (req, res) {
-    //   User.findOne({
-    //     resetPasswordToken: req.params.token,
-    //     resetPasswordExpire: {
-    //       $gt: Date.now()
-    //     }
-    //   }, function (err, user) {
-    //     if (!user) {
-    //       req.flash('error', 'Password reset token is invalid or has expired.');
-    //       return res.redirect('/forgot');
-    //     }
-    //     res.render('reset', {
-    //       token: req.params.token
-    //     });
-    //   });
-    // });
+  } catch (err) {
+    next(err);
+  }
+});
+
+//Forget Password update//
+exports.forgetPassword = asyncHandler(async (req, res, next) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.query.passwordToken,
+      restPasswordExpires: {
+        $gt: Date.now(),
+      },
+    });
+
+    if (!user) {
+      res.status(400).json({
+        message: "Password reset token is invalid or has expired.",
+      });
+    }
+    if (req.body.password === req.body.confirm) {
+      const salt = await bcrypt.genSalt(10);
+      const updatedPassword = await bcrypt.hash(req.body.password, salt);
+
+      var updatedUser = await User.findOneAndUpdate(
+        {
+          resetPasswordToken: req.query.passwordToken,
+        },
+        {
+          password: updatedPassword,
+          $unset: { resetPasswordToken: 1, restPasswordExpires: 1 },
+        },
+        { new: true }
+      );
+    } else {
+      res.status(400).json({ message: "Passwords donot match" });
+    }
+
+    var smtpTransport = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.MailingId,
+        pass: process.env.MailingPassword,
+      },
+    });
+    var mailOptions = {
+      to: user.email,
+      from: process.env.MailingId,
+      subject: "Your password has been changed",
+      text:
+        "Hello,\n\n" +
+        "This is a confirmation that the password for your account " +
+        user.email +
+        " has just been changed.\n",
+    };
+    smtpTransport.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(400).json({ message: error.message });
+      }
+    });
+    res
+      .status(200)
+      .json({ message: "Password updated successfully", user: updatedUser });
   } catch (err) {
     next(err);
   }

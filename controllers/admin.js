@@ -92,13 +92,15 @@ exports.DeleteUser = asyncHandler(async (req, res, next) => {
 // GET ALL PROJECTS //
 exports.ProjectsList = asyncHandler(async (req, res, next) => {
   try {
-    await Project.find({ isDeleted: false }, function (err, docs) {
-      if (err) res.json(err);
-      else
-        res.status(200).json({
-          projects: docs,
-        });
-    });
+    const populateQuery = [
+      {
+        path: "project_owner",
+      },
+    ];
+    const projects = await Project.find({ isDeleted: false }).populate(
+      populateQuery
+    );
+    res.status(200).json({ projects: projects });
   } catch (err) {
     next(err);
   }

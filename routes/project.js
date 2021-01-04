@@ -55,6 +55,7 @@ const {
   inviteProjectOwnerDecision,
   deleteComment,
   addImplementationStep,
+  deleteImplementationStep,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -94,6 +95,9 @@ router.post("/add-step", protect, addImplementationStep);
 //// EDIT Implementation Step ////
 
 router.post("/edit-step", protect, editImplementationStep);
+//// Delete Implementation Step ////
+
+router.post("/delete-step", protect, deleteImplementationStep);
 
 //// Calculate Progress Project ////
 router.post("/project-progress", protect, projectProgress);

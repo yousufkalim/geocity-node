@@ -24,6 +24,7 @@ const {
   ownedProjects,
   Interests,
   deleteComment,
+  requestForgetPassword,
   forgetPassword,
 } = require("../controllers/profile");
 
@@ -45,7 +46,9 @@ const User = require("../models/User");
 router.post("/editProfile", upload.single("profile_picture"), editProfile);
 
 // request for forget password //
-router.post("/request-forget-password", forgetPassword);
+router.post("/request-forget-password", requestForgetPassword);
+// Update password //
+router.post("/reset-password", forgetPassword);
 
 // DELETE PROFILE //
 router.post("/delete-profile", protect, deleteProfile);
