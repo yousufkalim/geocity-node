@@ -56,6 +56,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       type: Joi.string(),
       address: addressSchema,
       progress: Joi.string(),
+      general_photo: Joi.string(),
       general_description: Joi.string().max(3000),
       implementation_steps: Joi.array().items(implementationStepsSchema),
       category: Joi.string(),
