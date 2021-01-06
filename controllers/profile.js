@@ -232,7 +232,7 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
             "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
             "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
             "http://" +
-            req.headers.host +
+            "localhost:3001" +
             "/reset/" +
             token +
             "\n\n" +
@@ -254,6 +254,7 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
 //Forget Password update//
 exports.forgetPassword = asyncHandler(async (req, res, next) => {
   try {
+    console.log(req.body);
     const user = await User.findOne({
       resetPasswordToken: req.query.passwordToken,
       restPasswordExpires: {

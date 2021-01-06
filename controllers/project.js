@@ -13,7 +13,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const body = req.body;
     body.address = address;
     body.implementation_steps = implementation_steps1;
-
+    console.log(body);
     // body
     // file = req.file
 
@@ -56,8 +56,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       type: Joi.string(),
       address: addressSchema,
       progress: Joi.string(),
-      // general_photo: Joi.string(),
-
+      general_photo: Joi.string(),
       general_description: Joi.string().max(3000),
       implementation_steps: Joi.array().items(implementationStepsSchema),
       category: Joi.string(),
@@ -332,7 +331,7 @@ exports.deleteImplementationStep = asyncHandler(async (req, res, next) => {
   try {
     const projectID = req.query.id;
     const stepID = req.body.id;
-
+    console.log(stepID);
     let progress = "";
     const steps_Progress = [];
     var counts = {};
