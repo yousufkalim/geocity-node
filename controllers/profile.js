@@ -184,7 +184,10 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
   try {
     const email = req.body.email;
-
+    const result = await User.findOne({ email: email });
+    if (!result) {
+      return res.status(400).json({ message: "NO user found with this email" });
+    }
     async.waterfall([
       function (done) {
         crypto.randomBytes(20, function (err, buf) {
