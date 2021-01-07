@@ -1,13 +1,24 @@
-const { Notification } = require("../_helper/db");
-
+const User = require("../models/User");
 module.exports = {
   addNotifcation,
 };
 
 async function addNotifcation(data) {
   try {
-    var notification = new Notification(data);
-    await notification.save();
+    const user = await User.findByIdAndUpdate(
+      data.id,
+      {
+        $push: {
+          notifications: {
+            title: data.title,
+            description: data.message,
+            projectID: projectID,
+          },
+        },
+      },
+      { new: true }
+    );
+
     return "Added";
   } catch (e) {
     return "Error Adding: " + e;

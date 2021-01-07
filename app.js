@@ -95,6 +95,8 @@ server.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
 });
 
+const notificationService = require("./services/notifications");
+
 io.on("connection", (socket) => {
   console.log("Connected");
   logInfo.info(
@@ -115,9 +117,9 @@ io.on("connection", (socket) => {
   var recieverId = socket.handshake.query.recieverId;
   socket.on(`sendNotification`, (data) => {
     // logic to save notifications in our db
-    notifcationService
+    notificationService
       .addNotifcation({
-        user: data.id,
+        id: data.id,
         title: data.title,
         message: data.message,
       })
