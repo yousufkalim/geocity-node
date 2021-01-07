@@ -6,6 +6,8 @@ const dotenv = require("dotenv").config();
 const passport = require("passport");
 const MongoStore = require("connect-mongo")(session);
 const cookieParser = require("cookie-parser");
+const socketio = require("socket.io");
+const http = require("http");
 const bcrypt = require("bcryptjs");
 const async = require("async");
 const crypto = require("crypto");
@@ -14,6 +16,7 @@ const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 var cors = require("cors");
 const app = express();
+const server = http.createServer(app);
 require("./jobs/agenda");
 
 //// Body Parser Middleware ////
@@ -29,6 +32,14 @@ app.use(cookieParser());
 
 app.use("/assets", express.static("assets"));
 app.use("/views", express.static("views"));
+
+// socket io connection
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
 
 //// Sessions Middleware ////
 
@@ -80,6 +91,42 @@ app.use((error, req, res, next) => {
 
 //// Setting Port for Server ////
 const PORT = 5000 || process.env.PORT;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server listening to port ${PORT}`);
+});
+
+io.on("connection", (socket) => {
+  console.log("Connected");
+  logInfo.info(
+    "Connection Established ",
+    socket.id,
+    " accepted at ",
+    new Date().toJSON()
+  );
+  exports.socket = { socket, io };
+  var useris = socket.handshake.query.userConnectionId;
+  socket.join(useris);
+  //Leave the room if the user closes the socket
+  socket.on("disconnect", () => {
+    socket.leave(useris);
+  });
+
+  // for dynamic notifications
+  var recieverId = socket.handshake.query.recieverId;
+  socket.on(`sendNotification`, (data) => {
+    // logic to save notifications in our db
+    notifcationService
+      .addNotifcation({
+        user: data.id,
+        title: data.title,
+        message: data.message,
+      })
+      .then((message) => {
+        socket.broadcast.emit(`recieveNotification${data.id}`, {
+          title: data.title,
+          message: data.message,
+        });
+      })
+      .catch((e) => console.log(e));
+  });
 });

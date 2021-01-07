@@ -26,6 +26,7 @@ const {
   deleteComment,
   requestForgetPassword,
   forgetPassword,
+  unrecommendUserSkill,
 } = require("../controllers/profile");
 
 // middleware functions //
@@ -69,5 +70,8 @@ router.post("/Project-Interest", protect, Interests);
 
 // Recommend User skill //
 router.post("/view-profile/recommendSkill", protect, recommendUserSkill);
+
+// UnRecommend User skill //
+router.post("/view-profile/UnrecommendSkill", protect, unrecommendUserSkill);
 
 module.exports = router;

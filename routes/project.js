@@ -56,6 +56,7 @@ const {
   deleteComment,
   addImplementationStep,
   deleteImplementationStep,
+  unlike,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -113,6 +114,9 @@ router.get("/view-project", protect, ViewProject);
 
 //// LikedBy Route ////
 router.post("/view-project/likedBy", protect, LikedBy);
+
+// Unlike Project //
+router.post("/view-project/unlike", protect, unlike);
 
 //// Total number of Likes Route ////
 router.get("/totalLikes", protect, totalLikes);
