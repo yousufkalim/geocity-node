@@ -431,6 +431,19 @@ exports.LikedBy = asyncHandler(async (req, res, next) => {
   }
 });
 
+exports.unlike = asyncHandler(async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const user_name = user.username;
+    await Project.findByIdAndUpdate(req.query.id, {
+      $pull: { likedBy: req.user.id },
+    });
+    res.status(200).json({ user: user_name, message: "Unliked Successfully" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 //// Total Likes of a Project ////
 exports.totalLikes = asyncHandler(async (req, res, next) => {
   try {

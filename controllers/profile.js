@@ -456,6 +456,34 @@ exports.recommendUserSkill = asyncHandler(async (req, res, next) => {
   }
 });
 
+// Unrecommend User Skil //
+exports.unrecommendUserSkill = asyncHandler(async (req, res, next) => {
+  try {
+    const loggedInUser = req.user.id;
+    const skillId = req.body.skillId;
+
+    const user = await User.findOneAndUpdate(
+      {
+        _id: req.query.id,
+        skills: {
+          $elemMatch: {
+            _id: skillId,
+          },
+        },
+      },
+      {
+        $pull: {
+          "skills.$.recommendedBy": loggedInUser,
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json({ message: "Successfully Removed" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 //Delete Comment
 exports.deleteComment = asyncHandler(async (req, res, next) => {
   try {
