@@ -27,6 +27,7 @@ const {
   requestForgetPassword,
   forgetPassword,
   unrecommendUserSkill,
+  getAllNotifications,
 } = require("../controllers/profile");
 
 // middleware functions //
@@ -73,5 +74,8 @@ router.post("/view-profile/recommendSkill", protect, recommendUserSkill);
 
 // UnRecommend User skill //
 router.post("/view-profile/UnrecommendSkill", protect, unrecommendUserSkill);
+
+// Get all Notifications //
+router.post("/view-profile/all-notifications", protect, getAllNotifications);
 
 module.exports = router;

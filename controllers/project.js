@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Material = require("../models/Material");
+const { socket, io } = require("../app");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -532,7 +533,7 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
             $push: { invitation: newInvitation.id },
           })
         )
-        .then(
+        .then(async () => {
           await User.findByIdAndUpdate(receiver, {
             $push: {
               notifications: {
@@ -540,8 +541,12 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
                 description: "Someone Requested to view your Project",
               },
             },
-          })
-        );
+          });
+          socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title: "Request to View Project",
+            message: "Someone Requested to view your Project",
+          });
+        });
       res.status(200).json({ Invitation: newInvitation });
     }
   } catch (err) {
@@ -600,7 +605,7 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
             $push: { invitation: newInvitation.id },
           })
         )
-        .then(
+        .then(async () => {
           await User.findByIdAndUpdate(receiver, {
             $push: {
               notifications: {
@@ -609,8 +614,12 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
                   sender_name + " Invited you to collaborate on " + title,
               },
             },
-          })
-        );
+          });
+          socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title: "You are Invited to Collaborate on " + title,
+            message: sender_name + " Invited you to collaborate on " + title,
+          });
+        });
       res.status(200).json({ Invitation: newInvitation });
     }
   } catch (err) {
@@ -669,7 +678,7 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
             $push: { invitation: newInvitation.id },
           })
         )
-        .then(
+        .then(async () => {
           await User.findByIdAndUpdate(receiver, {
             $push: {
               notifications: {
@@ -677,8 +686,12 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
                 description: "Someone has requested to collaborate on " + title,
               },
             },
-          })
-        );
+          });
+          socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title: "Someone has requested to collaborate on " + title,
+            message: "Someone has requested to collaborate on " + title,
+          });
+        });
       res.status(200).json({ Invitation: newInvitation });
     }
   } catch (err) {
@@ -714,7 +727,7 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
         steps[stepIndex].contributing_user.splice(index, 1);
       }
       result.implementation_steps = steps;
-      const newResult = await result.save().then(
+      const newResult = await result.save().then(async () => {
         await User.findByIdAndUpdate(user, {
           $push: {
             notifications: {
@@ -722,8 +735,12 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
               description: ownerName + " removed you from " + title,
             },
           },
-        })
-      );
+        });
+        socket.broadcast.emit(`recieveNotification${user}`, {
+          title: "You have been removed from " + title,
+          message: ownerName + " removed you from " + title,
+        });
+      });
     }
     res.status(200).send("Removed this user successfully");
   } catch (err) {
@@ -763,6 +780,10 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
                 projectID: projectID,
               },
             },
+          });
+          socket.broadcast.emit(`recieveNotification${val1}`, {
+            title: "Project Deletion by Project Owner",
+            message: `Project Owner has requested to delete this Project, Do you want him to delete?`,
           });
         });
       });
@@ -839,6 +860,10 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
             },
           },
         });
+        socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
+          title: "Project Deletion Cancelled",
+          message: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+        });
       }
 
       if (updatedProject.contributingUsers_decision) {
@@ -865,6 +890,13 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
                 },
               },
             });
+            socket.broadcast.emit(
+              `recieveNotification${project.project_owner}`,
+              {
+                title: "Project Deletion Cancelled",
+                message: `You cannot Delete this Project`,
+              }
+            );
           } else {
             await Project.findByIdAndUpdate(projectID, {
               isDeleted: true,
@@ -1083,6 +1115,10 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
               },
             },
           });
+          socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
+            title: "Invitation Accepted",
+            message: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+          });
         });
       res.status(200).json({ message: "Invitation Accepted!" });
     } else if (decision == "Decline") {
@@ -1100,6 +1136,10 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
                 description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
               },
             },
+          });
+          socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
+            title: "Invitation Declined",
+            message: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Declined!" });
@@ -1157,6 +1197,10 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
               },
             },
           });
+          socket.broadcast.emit(`recieveNotification${sender}`, {
+            title: "Invitation Accepted",
+            message: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+          });
         });
       res.status(200).json({ message: "Invitation Accepted!" });
     } else if (decision == "Decline") {
@@ -1174,6 +1218,10 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
                 description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
               },
             },
+          });
+          socket.broadcast.emit(`recieveNotification${sender}`, {
+            title: "Invitation Declined",
+            message: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Declined!" });
@@ -1212,9 +1260,15 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
     } else if (decision == "Decline") {
       await User.findByIdAndUpdate(requestedUserID, {
         $push: {
-          notifications: `Your request to view ${project.title} has been rejected by the project owner`,
+          title: "Request to view Project",
+          description: `Your request to view ${project.title} has been rejected by the project owner`,
         },
-      })
+      });
+      socket.broadcast
+        .emit(`recieveNotification${requestedUserID}`, {
+          title: "Request to view Project",
+          message: `Your request to view ${project.title} has been rejected by the project owner`,
+        })
         .then(async () => {
           await Invitation.findByIdAndDelete(invitationID);
         })
