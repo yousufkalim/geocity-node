@@ -138,7 +138,6 @@ exports.register = asyncHandler(async (req, res, next) => {
         material,
         notifications,
       });
-
       res.status(200).json({ user: user });
     }
   } catch (err) {

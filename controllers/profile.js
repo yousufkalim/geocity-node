@@ -106,9 +106,9 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     let services = Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
-      username: Joi.string().min(5).max(20),
-      firstName: Joi.string().min(5).max(20),
-      lastName: Joi.string().min(5).max(20),
+      username: Joi.string().max(20),
+      firstName: Joi.string().max(20),
+      lastName: Joi.string().max(20),
       facebook: Joi.string().uri().allow(""),
       instagram: Joi.string().uri().allow(""),
       youtube: Joi.string().uri().allow(""),
