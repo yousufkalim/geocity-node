@@ -505,3 +505,15 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
     next(err);
   }
 });
+
+// Get all Notifications //
+exports.getAllNotifications = asyncHandler(async (req, res, next) => {
+  try {
+    const userId = req.query.id;
+    const user = await User.findById(userId);
+    const notifications = user.notifications;
+    res.status(200).json({ message: "Success!", notifications: notifications });
+  } catch (err) {
+    next(err);
+  }
+});
