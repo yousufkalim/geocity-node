@@ -118,6 +118,7 @@ const UserSchema = new mongoose.Schema({
     {
       title: String,
       description: String,
+      statusNew: { type: Boolean, default: true },
       projectID: {
         type: String,
         required: false,

@@ -53,22 +53,6 @@ app.use(
   })
 );
 
-//// DataBase Connection ////
-
-mongoose
-  .connect("mongodb://localhost:27017/CP", {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
-  .then(() => {
-    console.log("Database has connected successfully");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-
 //// Routes ////
 const auth = require("./routes/auth");
 const profile = require("./routes/profile");
@@ -91,47 +75,56 @@ app.use((error, req, res, next) => {
 });
 
 //// Setting Port for Server ////
-const PORT = 3000 || process.env.PORT;
-server.listen(PORT, () => {
-  console.log(`Server listening to port ${PORT}`);
-});
-
+const PORT = process.env.PORT || 5000;
 const notificationService = require("./services/notifications");
 
-io.on("connection", (socket) => {
-  console.log("Connected");
-  // logInfo.info(
-  //   "Connection Established ",
-  //   socket.id,
-  //   " accepted at ",
-  //   new Date().toJSON()
-  // );
-  exports.socket = { socket, io };
-  var useris = socket.handshake.query.userConnectionId;
-  socket.join(useris);
-  //Leave the room if the user closes the socket
-  socket.on("disconnect", () => {
-    socket.leave(useris);
-  });
+//// DataBase Connection ////
 
-  // for dynamic notifications
-  var recieverId = socket.handshake.query.recieverId;
-  socket.on(`sendNotification`, (data) => {
-    // logic to save notifications in our db
-    notificationService
-      .addNotifcation({
-        id: data.id,
-        projectID: data.projectID,
-        title: data.title,
-        description: data.description,
-      })
-      .then((message) => {
-        console.log(message);
-        socket.broadcast.emit(`recieveNotification${data.id}`, {
-          title: data.title,
-          description: data.description,
+mongoose
+  .connect("mongodb://localhost:27017/CP", {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server listening to port ${PORT}`);
+      io.on("connection", (socket) => {
+        console.log("Connected");
+        var useris = socket.handshake.query.userConnectionId;
+        socket.join(useris);
+        exports.socket = socket;
+        exports.io = io;
+
+        //Leave the room if the user closes the socket
+        socket.on("disconnect", () => {
+          console.log("disconnected");
+          socket.leave(useris);
         });
-      })
-      .catch((e) => console.log(e));
+        // for dynamic notifications
+        var recieverId = socket.handshake.query.recieverId;
+        socket.on(`sendNotification`, (data) => {
+          // logic to save notifications in our db
+          notificationService
+            .addNotifcation({
+              id: data.id,
+              projectID: data.projectID,
+              title: data.title,
+              description: data.description,
+            })
+            .then((message) => {
+              // console.log(message);
+              socket.broadcast.emit(`recieveNotification${data.id}`, {
+                title: data.title,
+                description: data.description,
+              });
+            })
+            .catch((e) => console.log(e));
+        });
+      });
+    });
+  })
+  .catch((err) => {
+    console.log(err);
   });
-});

@@ -4,7 +4,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Material = require("../models/Material");
-const { socket, io } = require("../app");
+const socket = require("../app");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -14,7 +14,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const body = req.body;
     body.address = address;
     body.implementation_steps = implementation_steps1;
-    console.log(body);
+    // console.log(body);
     // body
     // file = req.file
 
@@ -24,7 +24,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     } else {
       uploaded_Picture = "default.png";
     }
-    console.log(uploaded_Picture);
+    // console.log(uploaded_Picture);
     //// Validation ////
 
     // validation for implementation steps schema //
@@ -332,7 +332,7 @@ exports.deleteImplementationStep = asyncHandler(async (req, res, next) => {
   try {
     const projectID = req.query.id;
     const stepID = req.body.id;
-    console.log(stepID);
+    // console.log(stepID);
     let progress = "";
     const steps_Progress = [];
     var counts = {};
@@ -496,6 +496,7 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
     const project = req.query.id;
     const targeted_project = await Project.findById(project);
     const receiver = targeted_project.project_owner;
+    const usersender = await User.findById(sender);
 
     // check if user already sent invitation
     const userInvitations = await Invitation.find({
@@ -538,13 +539,15 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
             $push: {
               notifications: {
                 title: "Request to View Project",
-                description: "Someone Requested to view your Project",
+                description: `${usersender.username} Requested to view your Project`,
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${receiver}`, {
-            title: "Request to View Project",
-            message: "Someone Requested to view your Project",
+          socket.socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title: `${usersender.username} Requested to view your Project`,
+            statusNew: true,
+            description: `${usersender.username} Requested to view your Project`,
+            createdAt: new Date(),
           });
         });
       res.status(200).json({ Invitation: newInvitation });
@@ -615,9 +618,12 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${receiver}`, {
-            title: "You are Invited to Collaborate on " + title,
-            message: sender_name + " Invited you to collaborate on " + title,
+          socket.socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title: sender_name + " Invited you to collaborate on " + title,
+            createdAt: new Date(),
+            statusNew: true,
+            description:
+              sender_name + " Invited you to collaborate on " + title,
           });
         });
       res.status(200).json({ Invitation: newInvitation });
@@ -636,6 +642,7 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
 
     const project = await Project.findById(projectID);
     const receiver = project.project_owner;
+    // console.log(receiver, "reciever");
     const title = project.title;
 
     const sender = await User.findById(senderID);
@@ -682,14 +689,25 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(receiver, {
             $push: {
               notifications: {
-                title: "Someone has requested to collaborate on " + title,
-                description: "Someone has requested to collaborate on " + title,
+                title:
+                  `${sender_name} has requested to collaborate on` +
+                  " " +
+                  title,
+                description:
+                  `${sender_name} has requested to collaborate on` +
+                  " " +
+                  title,
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${receiver}`, {
-            title: "Someone has requested to collaborate on " + title,
-            message: "Someone has requested to collaborate on " + title,
+          socket.socket.broadcast.emit(`recieveNotification${receiver}`, {
+            title:
+              `${sender_name} has requested to collaborate on` + " " + title,
+            createdAt: new Date(),
+            statusNew: true,
+
+            description:
+              `${sender_name} has requested to collaborate on` + " " + title,
           });
         });
       res.status(200).json({ Invitation: newInvitation });
@@ -736,9 +754,12 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
             },
           },
         });
-        socket.broadcast.emit(`recieveNotification${user}`, {
-          title: "You have been removed from " + title,
-          message: ownerName + " removed you from " + title,
+        socket.socket.broadcast.emit(`recieveNotification${user}`, {
+          title: ownerName + " removed you from " + title,
+          createdAt: new Date(),
+          statusNew: true,
+
+          description: ownerName + " removed you from " + title,
         });
       });
     }
@@ -781,9 +802,12 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${val1}`, {
-            title: "Project Deletion by Project Owner",
-            message: `Project Owner has requested to delete this Project, Do you want him to delete?`,
+          socket.socket.broadcast.emit(`recieveNotification${val1}`, {
+            title: `Project Owner has requested to delete this Project, Do you want him to delete?`,
+            createdAt: new Date(),
+            statusNew: true,
+
+            description: `Project Owner has requested to delete this Project, Do you want him to delete?`,
           });
         });
       });
@@ -860,10 +884,16 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
             },
           },
         });
-        socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
-          title: "Project Deletion Cancelled",
-          message: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
-        });
+        socket.socket.broadcast.emit(
+          `recieveNotification${project.project_owner}`,
+          {
+            title: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+            statusNew: true,
+            createdAt: new Date(),
+
+            description: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+          }
+        );
       }
 
       if (updatedProject.contributingUsers_decision) {
@@ -890,11 +920,14 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
                 },
               },
             });
-            socket.broadcast.emit(
+            socket.socket.broadcast.emit(
               `recieveNotification${project.project_owner}`,
               {
-                title: "Project Deletion Cancelled",
-                message: `You cannot Delete this Project`,
+                title: `You cannot Delete this Project`,
+                statusNew: true,
+
+                description: `You cannot Delete this Project`,
+                createdAt: new Date(),
               }
             );
           } else {
@@ -1071,6 +1104,8 @@ exports.projectProgress = asyncHandler(async (req, res, next) => {
 
 // Accept and Decline Invite by user //
 exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
+  // console.log(socket, "sdnjdlids");
+
   try {
     const decision = req.body.decision;
     const projectID = req.query.id;
@@ -1079,7 +1114,6 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
     const userID = req.user.id;
     const invitationID = req.body.invitation;
     const invitation = await Invitation.findById(invitationID);
-
     const receiver = await User.findById(invitation.receiver);
     if (decision == "Accepted") {
       await Project.findOneAndUpdate(
@@ -1093,7 +1127,7 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
         },
         {
           $push: {
-            "implementation_steps.0.contributing_user": invitation.receiver,
+            "implementation_steps.$.contributing_user": invitation.receiver,
           },
         },
         { new: true }
@@ -1110,15 +1144,21 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(project.project_owner, {
             $push: {
               notifications: {
-                title: "Invitation Accepted",
+                title: `${receiver.username} has accepted your invitation to collaborate on ${project.title}`,
                 description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
-            title: "Invitation Accepted",
-            message: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
-          });
+          socket.socket.broadcast.emit(
+            `recieveNotification${project.project_owner}`,
+            {
+              title: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+              createdAt: new Date(),
+              statusNew: true,
+
+              description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+            }
+          );
         });
       res.status(200).json({ message: "Invitation Accepted!" });
     } else if (decision == "Decline") {
@@ -1132,15 +1172,21 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(project.project_owner, {
             $push: {
               notifications: {
-                title: "Invitation Declined",
+                title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
                 description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${project.project_owner}`, {
-            title: "Invitation Declined",
-            message: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
-          });
+          socket.socket.broadcast.emit(
+            `recieveNotification${project.project_owner}`,
+            {
+              title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+              createdAt: new Date(),
+              statusNew: true,
+
+              description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+            }
+          );
         });
       res.status(200).json({ message: "Invitation Declined!" });
     }
@@ -1162,7 +1208,6 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
 
     const receiver = await User.findById(invitation.receiver);
     const sender = await User.findById(invitation.sender);
-
     if (decision == "Accepted") {
       await Project.findOneAndUpdate(
         {
@@ -1197,9 +1242,12 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${sender}`, {
-            title: "Invitation Accepted",
-            message: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+          socket.socket.broadcast.emit(`recieveNotification${sender}`, {
+            title: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+            createdAt: new Date(),
+            statusNew: true,
+
+            description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Accepted!" });
@@ -1219,9 +1267,12 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
               },
             },
           });
-          socket.broadcast.emit(`recieveNotification${sender}`, {
-            title: "Invitation Declined",
-            message: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+          socket.socket.broadcast.emit(`recieveNotification${sender}`, {
+            title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+            createdAt: new Date(),
+            statusNew: true,
+
+            description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Declined!" });
@@ -1239,7 +1290,6 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
     const invitationID = req.body.invitation;
     const project = await Project.findById(projectID);
     const requestedUserID = req.body.sender;
-
     if (decision == "Accept") {
       await Project.findByIdAndUpdate(projectID, {
         $push: {
@@ -1256,19 +1306,21 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
             },
           });
         });
+      socket.socket.broadcast.emit(`recieveNotification${requestedUserID}`, {
+        title: `Your request to view the project ${project.title} has been accepted by the project owner`,
+        createdAt: new Date(),
+        statusNew: true,
+
+        description: `Your request to view the project ${project.title} has been accepted by the project owner`,
+      });
       res.status(200).json({ message: "Request Approved!" });
     } else if (decision == "Decline") {
       await User.findByIdAndUpdate(requestedUserID, {
         $push: {
           title: "Request to view Project",
-          description: `Your request to view ${project.title} has been rejected by the project owner`,
+          description: `Your request to view the project ${project.title} has been rejected by the project owner`,
         },
-      });
-      socket.broadcast
-        .emit(`recieveNotification${requestedUserID}`, {
-          title: "Request to view Project",
-          message: `Your request to view ${project.title} has been rejected by the project owner`,
-        })
+      })
         .then(async () => {
           await Invitation.findByIdAndDelete(invitationID);
         })
@@ -1279,6 +1331,13 @@ exports.requestToViewProjectDecision = asyncHandler(async (req, res, next) => {
             },
           });
         });
+      socket.socket.broadcast.emit(`recieveNotification${requestedUserID}`, {
+        title: `Your request to view the project ${project.title} has been rejected by the project owner`,
+        createdAt: new Date(),
+        statusNew: true,
+
+        description: `Your request to view the project ${project.title} has been rejected by the project owner`,
+      });
       res.status(200).json({ message: "Request Rejected!" });
     }
   } catch (err) {

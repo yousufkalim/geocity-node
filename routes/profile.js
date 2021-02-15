@@ -28,6 +28,10 @@ const {
   forgetPassword,
   unrecommendUserSkill,
   getAllNotifications,
+  AddInterest,
+  DeleteInterest,
+  updateNotifications,
+  getAllInterest,
 } = require("../controllers/profile");
 
 // middleware functions //
@@ -77,5 +81,10 @@ router.post("/view-profile/UnrecommendSkill", protect, unrecommendUserSkill);
 
 // Get all Notifications //
 router.post("/view-profile/all-notifications", protect, getAllNotifications);
+router.post("/update-notifications", protect, updateNotifications);
+
+router.post("/create-interest", AddInterest);
+router.post("/delete-interest", DeleteInterest);
+router.get("/all-interest", getAllInterest);
 
 module.exports = router;

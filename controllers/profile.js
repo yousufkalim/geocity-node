@@ -82,7 +82,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     const material1 = JSON.parse(req.body.material);
 
     const body = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     body.skills = skills1;
     body.material = material1;
 
@@ -184,71 +184,48 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
 exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
   try {
     const email = req.body.email;
-    const result = await User.findOne({ email: email });
-    if (!result) {
-      return res.status(400).json({ message: "NO user found with this email" });
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      res.status(400).json({ message: "NO user found with this email" });
+    } else {
+      const buf = await crypto.randomBytes(20);
+      var token = buf.toString("hex");
+      console.log("toekn", token);
+      const restPasswordExpires = Date.now() + 36000000;
+      var updatedUser = await User.findOneAndUpdate(
+        { email: email },
+        {
+          resetPasswordToken: token,
+          restPasswordExpires: restPasswordExpires,
+        },
+        { new: true }
+      );
+      var smtpTransport = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "shehzadcs2016@gmail.com",
+          pass: "44ttqqll",
+        },
+      });
+      var mailOptions = {
+        to: email,
+        from: "shehzadcs2016@gmail.com",
+        subject: "Password Reset",
+        text:
+          "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
+          "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
+          "http://" +
+          "localhost:3000" +
+          "/reset/" +
+          token +
+          "\n\n" +
+          "If you did not request this, please ignore this email and your password will remain unchanged.\n",
+      };
+      console.log("2", mailOptions);
+
+      const info = await smtpTransport.sendMail(mailOptions);
+      res.status(200).json({ message: "Email has been sent successfully" });
     }
-    async.waterfall([
-      function (done) {
-        crypto.randomBytes(20, function (err, buf) {
-          var token = buf.toString("hex");
-          done(err, token);
-        });
-      },
-      function (token, done) {
-        User.findOne(
-          {
-            email: email,
-          },
-          async function (err, user) {
-            if (!user) {
-              res
-                .status(404)
-                .json({ message: "No account with that email address exists" });
-            }
-            const restPasswordExpires = Date.now() + 36000000;
-            var updatedUser = await User.findOneAndUpdate(
-              { email: email },
-              {
-                resetPasswordToken: token,
-                restPasswordExpires: restPasswordExpires,
-              },
-              { new: true }
-            );
-            done(err, token, updatedUser);
-          }
-        );
-      },
-      function (token, updatedUser, done) {
-        var smtpTransport = nodemailer.createTransport({
-          service: "Gmail",
-          auth: {
-            user: process.env.MailingId,
-            pass: process.env.MailingPassword,
-          },
-        });
-        var mailOptions = {
-          to: email,
-          from: process.env.MailingId,
-          subject: "Password Reset",
-          text:
-            "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
-            "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
-            "http://" +
-            "localhost:3001" +
-            "/reset/" +
-            token +
-            "\n\n" +
-            "If you did not request this, please ignore this email and your password will remain unchanged.\n",
-        };
-        smtpTransport.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            return res.status(400).json({ message: error.message });
-          }
-        });
-      },
-      res.status(200).json({ message: "Email has been sent successfully" }),
-    ]);
   } catch (err) {
     next(err);
   }
@@ -257,7 +234,7 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
 //Forget Password update//
 exports.forgetPassword = asyncHandler(async (req, res, next) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     const user = await User.findOne({
       resetPasswordToken: req.query.passwordToken,
       restPasswordExpires: {
@@ -489,7 +466,7 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
   try {
     const commentId = req.body.commentId;
     const userId = req.query.id;
-    console.log(userId, commentId);
+    // console.log(userId, commentId);
 
     const user = await User.findByIdAndUpdate(
       userId,
@@ -511,8 +488,84 @@ exports.getAllNotifications = asyncHandler(async (req, res, next) => {
   try {
     const userId = req.query.id;
     const user = await User.findById(userId);
-    const notifications = user.notifications;
+    const notifications = user.notifications.filter(
+      (not) => not.statusNew == true
+    );
     res.status(200).json({ message: "Success!", notifications: notifications });
+  } catch (err) {
+    next(err);
+  }
+});
+// update user notification
+exports.updateNotifications = asyncHandler(async (req, res, next) => {
+  try {
+    const userId = req.query.id;
+    const loggedInUser = req.user;
+    // console.log(loggedInUser, "loggedIn");
+
+    const notifications = loggedInUser.notifications;
+    const tempNotify = notifications.find((not) => not._id == userId);
+    await User.findByIdAndUpdate(
+      loggedInUser,
+      {
+        $set: {
+          notifications: {
+            statusNew: false,
+            title: req.body.title,
+            description: req.body.description,
+          },
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json({ message: "Success!", notifications: tempNotify });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// add interests by user
+
+exports.AddInterest = asyncHandler(async (req, res, next) => {
+  try {
+    const interest = req.body.interest;
+    const user = await User.findById(req.query.id);
+
+    await User.findByIdAndUpdate(req.query.id, {
+      $push: { interests: interest },
+    });
+    res.status(200).json({ user: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Delete Interests
+
+exports.DeleteInterest = asyncHandler(async (req, res, next) => {
+  try {
+    const user = await User.findById(req.query.id);
+    const interest = req.body.interest;
+
+    await User.findByIdAndUpdate(req.query.id, {
+      $pull: { interests: interest },
+    });
+    res
+      .status(200)
+      .json({ user: user, message: "Interest deleted Successfully" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+exports.getAllInterest = asyncHandler(async (req, res, next) => {
+  try {
+    const userId = req.query.id;
+    const user = await User.findById(userId);
+    const interests = user.interests;
+    const interest = await User.find({
+      interests: interests,
+    }).populate("interests");
+    res.status(200).json({ message: "Success!", interests: interest });
   } catch (err) {
     next(err);
   }
