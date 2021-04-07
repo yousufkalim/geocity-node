@@ -82,7 +82,6 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     const material1 = JSON.parse(req.body.material);
 
     const body = req.body;
-    // console.log(req.body);
     body.skills = skills1;
     body.material = material1;
 
@@ -215,7 +214,7 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
           "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
           "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
           "http://" +
-          "localhost:3000" +
+          "geocity.io" +
           "/reset/" +
           token +
           "\n\n" +
@@ -223,7 +222,12 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
       };
       console.log("2", mailOptions);
 
-      const info = await smtpTransport.sendMail(mailOptions);
+      const info = await smtpTransport
+        .sendMail(mailOptions)
+        .then((res) => {
+          console.log("mail res", res);
+        })
+        .catch((err) => console.log("mail er", err));
       res.status(200).json({ message: "Email has been sent successfully" });
     }
   } catch (err) {

@@ -5,6 +5,7 @@ const Project = require("../models/Project");
 const Material = require("../models/Material");
 const Skill = require("../models/Skill");
 const Category = require("../models/Category");
+var ObjectID = require("mongodb").ObjectID;
 
 //REGISTER USER API
 
@@ -12,11 +13,18 @@ exports.register = asyncHandler(async (req, res, next) => {
   try {
     const skills1 = JSON.parse(req.body.skills);
     const material1 = JSON.parse(req.body.material);
+    // ****
+    // const materialCheck = material1.find((dt) => typeof dt === typeof "");
+    // var objectId = new ObjectID();
+    // var index = material1.indexOf(materialCheck);
 
+    // if (index !== -1) {
+    //   material1[index] = `${objectId}`;
+    // }
+    //
     const body = req.body;
     body.skills = skills1;
     body.material = material1;
-
     if (req.file) {
       var uploaded_Picture = req.file.filename;
     }
@@ -31,7 +39,6 @@ exports.register = asyncHandler(async (req, res, next) => {
         .pattern(/^[0-5]+$/)
         .required(),
     });
-
     const schema = Joi.object().keys({
       username: Joi.string().required(),
       firstName: Joi.string().required(),

@@ -87,7 +87,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       await Promise.all(
         await steps.map(async (val) => {
           const requestedMaterial = val.materialName;
-
           if (requestedMaterial) {
             const result = await Material.find({ name: requestedMaterial });
             if (result.length == 0) {
@@ -104,7 +103,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       });
       if (steps_Progress) {
         const size = steps_Progress.length;
-
         for (var i = 0; i < steps_Progress.length; i++) {
           var num = steps_Progress[i];
           counts[num] = counts[num] ? counts[num] + 1 : 1;
