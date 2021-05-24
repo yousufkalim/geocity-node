@@ -5,6 +5,7 @@ const Project = require("../models/Project");
 const Invitation = require("../models/Invitation");
 const Material = require("../models/Material");
 const socket = require("../app");
+const nodemailer = require("nodemailer");
 
 //// Create project ////
 exports.createProject = asyncHandler(async (req, res, next) => {
@@ -43,7 +44,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     });
 
     const implementationStepsSchema = Joi.object().keys({
-      name: Joi.string().max(20),
+      name: Joi.string().max(150),
       skills: skillSchema,
       status: Joi.string(),
       material: Joi.string().allow(""),
@@ -57,7 +58,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       type: Joi.string(),
       address: addressSchema,
       progress: Joi.string(),
-      general_photo: Joi.string(),
+      general_photo: Joi.string().optional().allow(""),
       general_description: Joi.string().max(3000),
       implementation_steps: Joi.array().items(implementationStepsSchema),
       category: Joi.string(),
@@ -87,6 +88,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       await Promise.all(
         await steps.map(async (val) => {
           const requestedMaterial = val.materialName;
+
           if (requestedMaterial) {
             const result = await Material.find({ name: requestedMaterial });
             if (result.length == 0) {
@@ -103,6 +105,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       });
       if (steps_Progress) {
         const size = steps_Progress.length;
+
         for (var i = 0; i < steps_Progress.length; i++) {
           var num = steps_Progress[i];
           counts[num] = counts[num] ? counts[num] + 1 : 1;
@@ -119,31 +122,36 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     if (!city) {
       city = req.user.city;
     }
+    const checkProj = await Project.findOne({ title: req.body.title });
 
     //// Saving Project in DataBase ////
-    const project = await new Project({
-      title: req.body.title,
-      type: req.body.type,
-      address: req.body.address,
-      general_photo: uploaded_Picture,
-      general_description: req.body.general_description,
-      implementation_steps: steps,
-      category: req.body.category,
-      project_owner: req.user.id,
-      progress: progress,
-    });
+    if (checkProj) {
+      res.status(400).json({ message: "Project already existed" });
+    } else {
+      const project = await new Project({
+        title: req.body.title,
+        type: req.body.type,
+        address: req.body.address,
+        general_photo: uploaded_Picture,
+        general_description: req.body.general_description,
+        implementation_steps: steps,
+        category: req.body.category,
+        project_owner: req.user.id,
+        progress: progress,
+      });
 
-    await project.save();
+      await project.save();
 
-    //// Setting Project Owner Field to TRUE in the DataBase ////
+      //// Setting Project Owner Field to TRUE in the DataBase ////
 
-    const user_id = req.user.id;
-    const user = await User.findByIdAndUpdate(user_id, {
-      isProjectOwner: true,
-      $push: { projects: project._id },
-    });
+      const user_id = req.user.id;
+      const user = await User.findByIdAndUpdate(user_id, {
+        isProjectOwner: true,
+        $push: { projects: project._id },
+      });
 
-    res.status(200).json({ project: project });
+      res.status(200).json({ project: project });
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -1359,6 +1367,51 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
       .status(200)
       .json({ message: "Comment Deleted successfully", project: project });
   } catch (err) {
+    next(err);
+  }
+});
+
+exports.suggestStep = asyncHandler(async (req, res, next) => {
+  try {
+    const title = req.body.suggest;
+    const user_id = req.user.firstName + req.user.lastName;
+   
+
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      tls: {
+        rejectUnauthorized: false,
+      },
+      auth: {
+        user: process.env.MailingId,
+        pass: process.env.MailingPassword,
+      },
+    });
+    var mailOptions = {
+      to: req.body.email,
+      from: process.env.MailingId,
+      subject: "Suggestion d'une étape pour votre projet",
+      text:
+        "The Title:" +
+        "Suggestion d'une étape pour votre projet par " +
+        user_id +
+        "The text " +
+        title +
+        "\n\n" +
+        "If you did not request this, please ignore this email.\n",
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(200).json({ message: "Step Suggested Successfully" });
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+
     next(err);
   }
 });

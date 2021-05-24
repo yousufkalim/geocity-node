@@ -87,4 +87,5 @@ router.post("/create-interest", AddInterest);
 router.post("/delete-interest", DeleteInterest);
 router.get("/all-interest", getAllInterest);
 
+
 module.exports = router;

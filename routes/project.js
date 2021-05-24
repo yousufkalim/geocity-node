@@ -56,7 +56,7 @@ const {
   deleteComment,
   addImplementationStep,
   deleteImplementationStep,
-  unlike,
+  unlike,suggestStep
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -92,6 +92,8 @@ router.post(
 //// ADD Implementation Step ////
 
 router.post("/add-step", protect, addImplementationStep);
+router.post("/suggestStep", protect, suggestStep);
+
 
 //// EDIT Implementation Step ////
 

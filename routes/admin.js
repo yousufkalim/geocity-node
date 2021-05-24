@@ -57,9 +57,9 @@ router.post("/edit-category", protect, EditCategory);
 router.post("/delete-category", protect, DeleteCategory);
 
 //// GET ALL Skills ////
-router.get("/skillList", protect, getAllSkills);
+router.get("/skillList",protect,  getAllSkills);
 // Create SkillField Route //
-router.post("/create-skillField", protect, CreateSkillField);
+router.post("/create-skillField",protect, CreateSkillField);
 // EDIT SkillField CATEGORY //
 router.post("/edit-skillField", protect, EditSkillField);
 // DELETE PROJECTS CATEGORY //
@@ -69,9 +69,9 @@ router.post("/delete-skillField", protect, DeleteSkillField);
 router.post("/create-skill", protect, CreateSkill);
 
 //// GET ALL Materials ////
-router.get("/materialList", protect, getAllMaterials);
+router.get("/materialList",protect,  getAllMaterials);
 // Create Materials Route //
-router.post("/create-material", protect, CreateMaterial);
+router.post("/create-material",protect,  CreateMaterial);
 // EDIT PROJECTS CATEGORY //
 router.post("/edit-material", protect, EditMaterial);
 // DELETE PROJECTS CATEGORY //

@@ -17,6 +17,12 @@ module.exports = mongoose.model("Decision", ProjectDecision);
 
 // USERS SCHEMA
 const UserSchema = new mongoose.Schema({
+  
+  status: {
+    type: String,
+    enum: ["active", "deactive"],
+    default: "deactive",
+  },
   username: {
     type: String,
     required: false,
@@ -136,6 +142,8 @@ const UserSchema = new mongoose.Schema({
 
   resetPasswordToken: String,
   restPasswordExpires: Date,
+  verifyEmailToken: String,
+  emailVerificationExpiresIn: Date,
   createdAt: {
     type: Date,
     default: Date.now,

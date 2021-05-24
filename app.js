@@ -11,17 +11,13 @@ const http = require("http");
 const bcrypt = require("bcryptjs");
 const async = require("async");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 var cors = require("cors");
 const app = express();
 const server = http.createServer(app);
 require("./jobs/agenda");
-var ObjectID = require("mongodb").ObjectID;
 
-var objectId = new ObjectID();
-console.log(objectId, "objectID");
 //// Body Parser Middleware ////
 
 app.use(bodyParser.json());
@@ -56,6 +52,22 @@ app.use(
   })
 );
 
+//// DataBase Connection ////
+
+mongoose
+  .connect("mongodb://localhost:27017/CP", {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    console.log("Database has connected successfully");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
 //// Routes ////
 const auth = require("./routes/auth");
 const profile = require("./routes/profile");
@@ -71,63 +83,56 @@ app.use("/api/v1/admin", admin);
 
 //// Error Handler
 app.use((error, req, res, next) => {
-  console.log("Main Error =>", error);
+  // console.log("Main Error =>", error);
   const message = error.message;
   const status = error.status || 500;
   res.status(status).json({ message: message, error: error });
 });
 
 //// Setting Port for Server ////
-const PORT = process.env.PORT || 5000;
+const PORT = 1190;
+server.listen(PORT, () => {
+  console.log(`Server listening to port ${PORT}`);
+});
+
 const notificationService = require("./services/notifications");
+// console.log(io,"io on connnection")
+io.on("connection", (socket) => {
+  console.log("Connected");
+  // logInfo.info(
+  //   "Connection Established ",
+  //   socket.id,
+  //   " accepted at ",
+  //   new Date().toJSON()
+  // );
+  var useris = socket.handshake.query.userConnectionId;
+  socket.join(useris);
+  exports.socket = socket;
+  exports.io = io;
 
-//// DataBase Connection ////
-
-mongoose
-  .connect("mongodb://localhost:27017/CP", {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`Server listening to port ${PORT}`);
-      io.on("connection", (socket) => {
-        console.log("Connected");
-        var useris = socket.handshake.query.userConnectionId;
-        socket.join(useris);
-        exports.socket = socket;
-        exports.io = io;
-
-        //Leave the room if the user closes the socket
-        socket.on("disconnect", () => {
-          console.log("disconnected");
-          socket.leave(useris);
-        });
-        // for dynamic notifications
-        var recieverId = socket.handshake.query.recieverId;
-        socket.on(`sendNotification`, (data) => {
-          // logic to save notifications in our db
-          notificationService
-            .addNotifcation({
-              id: data.id,
-              projectID: data.projectID,
-              title: data.title,
-              description: data.description,
-            })
-            .then((message) => {
-              // console.log(message);
-              socket.broadcast.emit(`recieveNotification${data.id}`, {
-                title: data.title,
-                description: data.description,
-              });
-            })
-            .catch((e) => console.log(e));
-        });
-      });
-    });
-  })
-  .catch((err) => {
-    console.log(err);
+  //Leave the room if the user closes the socket
+  socket.on("disconnect", () => {
+    console.log('discconented')
+    socket.leave(useris);
   });
+  // for dynamic notifications
+  var recieverId = socket.handshake.query.recieverId;
+  socket.on(`sendNotification`, (data) => {
+    // logic to save notifications in our db
+    notificationService
+      .addNotifcation({
+        id: data.id,
+        projectID: data.projectID,
+        title: data.title,
+        description: data.description,
+      })
+      .then((message) => {
+        // console.log(message);
+        socket.broadcast.emit(`recieveNotification${data.id}`, {
+          title: data.title,
+          description: data.description,
+        });
+      })
+      .catch((e) => console.log(e));
+  });
+});
