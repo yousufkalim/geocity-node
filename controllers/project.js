@@ -60,97 +60,100 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       progress: Joi.string(),
       general_photo: Joi.string().optional().allow(""),
       general_description: Joi.string().max(3000),
-      implementation_steps: Joi.array().items(implementationStepsSchema),
+      implementation_steps: Joi.array().min(1).items(implementationStepsSchema),
       category: Joi.string(),
       project_owner: Joi.string(),
     });
 
     const results = schema.validate(req.body);
     if (results.error) {
-      return res.status(400).send(results.error.details[0].message);
-    }
+      return res
+        .status(400)
+        .send({ message: results.error.details[0].message });
+    } else {
+      const {
+        title,
+        type,
+        general_photo,
+        general_description,
+        category,
+        project_owner,
+      } = req.body;
 
-    const {
-      title,
-      type,
-      general_photo,
-      general_description,
-      category,
-      project_owner,
-    } = req.body;
+      // Check if the Material are in database or not, If Not then saving them in the database//
+      var steps = req.body.implementation_steps;
+      let progress = "";
+      const steps_Progress = [];
+      var counts = {};
+      if (steps) {
+        await Promise.all(
+          await steps.map(async (val) => {
+            const requestedMaterial = val.materialName;
 
-    // Check if the Material are in database or not, If Not then saving them in the database//
-    var steps = req.body.implementation_steps;
-    let progress = "";
-    const steps_Progress = [];
-    var counts = {};
-    if (steps) {
-      await Promise.all(
-        await steps.map(async (val) => {
-          const requestedMaterial = val.materialName;
-
-          if (requestedMaterial) {
-            const result = await Material.find({ name: requestedMaterial });
-            if (result.length == 0) {
+            if (requestedMaterial) {
               const newMaterial = new Material({
                 name: requestedMaterial,
               });
               await newMaterial.save().then((val.material = newMaterial._id));
             }
+          })
+        );
+        await steps.map(async (item) => {
+          steps_Progress.push(item.status);
+        });
+        if (steps_Progress) {
+          const size = steps_Progress.length;
+
+          for (var i = 0; i < steps_Progress.length; i++) {
+            var num = steps_Progress[i];
+            counts[num] = counts[num] ? counts[num] + 1 : 1;
           }
-        })
-      );
-      await steps.map(async (item) => {
-        steps_Progress.push(item.status);
-      });
-      if (steps_Progress) {
-        const size = steps_Progress.length;
-
-        for (var i = 0; i < steps_Progress.length; i++) {
-          var num = steps_Progress[i];
-          counts[num] = counts[num] ? counts[num] + 1 : 1;
+          var completed_Steps = counts["completed"];
+          let result = (completed_Steps / size) * 100 || 0;
+          progress = result + "%";
         }
-        var completed_Steps = counts["completed"];
-        let result = (completed_Steps / size) * 100 || 0;
-        progress = result + "%";
       }
-    }
 
-    // If project has not assigned City //
+      // If project has not assigned City //
 
-    var city = req.body.address.city;
-    if (!city) {
-      city = req.user.city;
-    }
-    const checkProj = await Project.findOne({ title: req.body.title });
+      var city = req.body.address.city;
+      if (!city) {
+        city = req.user.city;
 
-    //// Saving Project in DataBase ////
-    if (checkProj) {
-      res.status(400).json({ message: "Project already existed" });
-    } else {
-      const project = await new Project({
-        title: req.body.title,
-        type: req.body.type,
-        address: req.body.address,
-        general_photo: uploaded_Picture,
-        general_description: req.body.general_description,
-        implementation_steps: steps,
-        category: req.body.category,
-        project_owner: req.user.id,
-        progress: progress,
-      });
+        const checkProj = await Project.findOne({ title: req.body.title });
 
-      await project.save();
+        //// Saving Project in DataBase ////
+        if (checkProj) {
+          res.status(400).json({ message: "Project already existed" });
+        } else {
+          const project = await new Project({
+            title: req.body.title,
+            type: req.body.type,
+            address: req.body.address,
+            general_photo: uploaded_Picture,
+            general_description: req.body.general_description,
+            implementation_steps: steps,
+            category: req.body.category,
+            project_owner: req.user.id,
+            progress: progress,
+          });
 
-      //// Setting Project Owner Field to TRUE in the DataBase ////
+          await project.save();
 
-      const user_id = req.user.id;
-      const user = await User.findByIdAndUpdate(user_id, {
-        isProjectOwner: true,
-        $push: { projects: project._id },
-      });
+          //// Setting Project Owner Field to TRUE in the DataBase ////
 
-      res.status(200).json({ project: project });
+          const user_id = req.user.id;
+          const user = await User.findByIdAndUpdate(user_id, {
+            isProjectOwner: true,
+            $push: { projects: project._id },
+          });
+
+          res.status(200).json({
+            message: "Project Created Successfully",
+            project: project,
+          });
+        }
+      }
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -187,23 +190,25 @@ exports.editProject = asyncHandler(async (req, res, next) => {
 
     const results = schema.validate(req.body);
     if (results.error) {
-      return res.status(400).send(results.error.details[0].message);
+      return res
+        .status(400)
+        .send({ message: results.error.details[0].message });
+    } else {
+      //// Updating and Saving Project In Database ////
+
+      const project = await Project.findByIdAndUpdate(
+        req.query.id,
+        {
+          title: req.body.title,
+          type: req.body.type,
+          general_photo: uploaded_Picture || "default.png",
+          general_description: req.body.general_description,
+          category: req.body.category,
+        },
+        { new: true }
+      );
+      res.status(200).json({ project: project });
     }
-
-    //// Updating and Saving Project In Database ////
-
-    const project = await Project.findByIdAndUpdate(
-      req.query.id,
-      {
-        title: req.body.title,
-        type: req.body.type,
-        general_photo: uploaded_Picture || "default.png",
-        general_description: req.body.general_description,
-        category: req.body.category,
-      },
-      { new: true }
-    );
-    res.status(200).json({ project: project });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -266,6 +271,9 @@ exports.editImplementationStep = asyncHandler(async (req, res, next) => {
       project: updatedProject,
     });
   } catch (err) {
+    res.status(400).json({
+      message: err.message,
+    });
     next(err);
   }
 });
@@ -284,12 +292,11 @@ exports.addImplementationStep = asyncHandler(async (req, res, next) => {
       const requestedMaterial = step.materialName;
       if (requestedMaterial) {
         const result = await Material.find({ name: requestedMaterial });
-        if (result.length == 0) {
-          const newMaterial = new Material({
-            name: requestedMaterial,
-          });
-          await newMaterial.save().then((step.material = newMaterial._id));
-        }
+
+        const newMaterial = new Material({
+          name: requestedMaterial,
+        });
+        await newMaterial.save().then((step.material = newMaterial._id));
       }
     }
     const project = await Project.findByIdAndUpdate(
@@ -428,11 +435,11 @@ exports.ViewProject = asyncHandler(async (req, res, next) => {
 exports.LikedBy = asyncHandler(async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    const user_name = user.username;
+    const user_name = user.firstName;
     await Project.findByIdAndUpdate(req.query.id, {
       $push: { likedBy: req.user.id },
     });
-    res.status(200).json({ user: user_name });
+    res.status(200).json({ message: "liked Successfully", user: user_name });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -441,7 +448,7 @@ exports.LikedBy = asyncHandler(async (req, res, next) => {
 exports.unlike = asyncHandler(async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    const user_name = user.username;
+    const user_name = user.firstName;
     await Project.findByIdAndUpdate(req.query.id, {
       $pull: { likedBy: req.user.id },
     });
@@ -473,7 +480,7 @@ exports.totalLikes = asyncHandler(async (req, res, next) => {
 exports.comment = asyncHandler(async (req, res, next) => {
   try {
     const loggedUser = await User.findById(req.user.id);
-    const userName = loggedUser.username;
+    const userName = loggedUser.firstName;
     const comment = req.body.comment;
     const newComment = {
       user: loggedUser.id,
@@ -545,18 +552,21 @@ exports.RequestToView = asyncHandler(async (req, res, next) => {
             $push: {
               notifications: {
                 title: "Request to View Project",
-                description: `${usersender.username} Requested to view your Project`,
+                description: `${usersender.firstName} Requested to view your Project`,
               },
             },
           });
           socket.socket.broadcast.emit(`recieveNotification${receiver}`, {
-            title: `${usersender.username} Requested to view your Project`,
+            title: `${usersender.firstName} Requested to view your Project`,
             statusNew: true,
-            description: `${usersender.username} Requested to view your Project`,
+            description: `${usersender.firstName} Requested to view your Project`,
             createdAt: new Date(),
           });
         });
-      res.status(200).json({ Invitation: newInvitation });
+      res.status(200).json({
+        message: "You have successfully Send Request to View Project",
+        Invitation: newInvitation,
+      });
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -576,7 +586,7 @@ exports.InviteUser = asyncHandler(async (req, res, next) => {
     const title = project.title;
 
     const sender = await User.findById(senderID);
-    const sender_name = sender.username;
+    const sender_name = sender.firstName;
 
     // check if project owner already sent invitation to user
     const userInvitations = await Invitation.find({
@@ -652,7 +662,7 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
     const title = project.title;
 
     const sender = await User.findById(senderID);
-    const sender_name = sender.username;
+    const sender_name = sender.firstName;
 
     // check if collaborator already sent invitation to project owner
     const userInvitations = await Invitation.find({
@@ -690,6 +700,24 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(senderID, {
             $push: { invitation: newInvitation.id },
           })
+        )
+        .then(
+          await Project.findOneAndUpdate(
+            {
+              _id: projectID,
+              implementation_steps: {
+                $elemMatch: {
+                  _id: stepID,
+                },
+              },
+            },
+            {
+              $push: {
+                "implementation_steps.$.user_requests": senderID,
+              },
+            },
+            { new: true }
+          )
         )
         .then(async () => {
           await User.findByIdAndUpdate(receiver, {
@@ -737,7 +765,7 @@ exports.deleteContributor = asyncHandler(async (req, res, next) => {
       const title = result.title;
       const projectOwnerID = result.project_owner;
       const projectOwner = await User.findById(projectOwnerID);
-      const ownerName = projectOwner.username;
+      const ownerName = projectOwner.firstName;
       const steps = result.implementation_steps;
       let stepIndex;
       steps.map((val, index) => {
@@ -885,7 +913,7 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
           $push: {
             notifications: {
               title: "Project Deletion Cancelled",
-              description: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+              description: `Collaborator "${user.firstName}" has rejected ${project.title} deletion, You cannot delete this Project`,
               projectID: projectID,
             },
           },
@@ -893,11 +921,11 @@ exports.takeDecision = asyncHandler(async (req, res, next) => {
         socket.socket.broadcast.emit(
           `recieveNotification${project.project_owner}`,
           {
-            title: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+            title: `Collaborator "${user.firstName}" has rejected ${project.title} deletion, You cannot delete this Project`,
             statusNew: true,
             createdAt: new Date(),
 
-            description: `Collaborator "${user.username}" has rejected ${project.title} deletion, You cannot delete this Project`,
+            description: `Collaborator "${user.firstName}" has rejected ${project.title} deletion, You cannot delete this Project`,
           }
         );
       }
@@ -1150,19 +1178,19 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(project.project_owner, {
             $push: {
               notifications: {
-                title: `${receiver.username} has accepted your invitation to collaborate on ${project.title}`,
-                description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+                title: `${receiver.firstName} has accepted your invitation to collaborate on ${project.title}`,
+                description: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
               },
             },
           });
           socket.socket.broadcast.emit(
             `recieveNotification${project.project_owner}`,
             {
-              title: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+              title: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
               createdAt: new Date(),
               statusNew: true,
 
-              description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+              description: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
             }
           );
         });
@@ -1178,19 +1206,19 @@ exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
           await User.findByIdAndUpdate(project.project_owner, {
             $push: {
               notifications: {
-                title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
-                description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+                title: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
+                description: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
               },
             },
           });
           socket.socket.broadcast.emit(
             `recieveNotification${project.project_owner}`,
             {
-              title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+              title: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
               createdAt: new Date(),
               statusNew: true,
 
-              description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+              description: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
             }
           );
         });
@@ -1244,16 +1272,16 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
             $push: {
               notifications: {
                 title: "Invitation Accepted",
-                description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+                description: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
               },
             },
           });
           socket.socket.broadcast.emit(`recieveNotification${sender}`, {
-            title: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+            title: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
             createdAt: new Date(),
             statusNew: true,
 
-            description: `${receiver.username} has accepted invitation to collaborate on ${project.title}`,
+            description: `${receiver.firstName} has accepted invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Accepted!" });
@@ -1269,16 +1297,16 @@ exports.inviteProjectOwnerDecision = asyncHandler(async (req, res, next) => {
             $push: {
               notifications: {
                 title: "Invitation Declined",
-                description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+                description: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
               },
             },
           });
           socket.socket.broadcast.emit(`recieveNotification${sender}`, {
-            title: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+            title: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
             createdAt: new Date(),
             statusNew: true,
 
-            description: `${receiver.username} has declined your invitation to collaborate on ${project.title}`,
+            description: `${receiver.firstName} has declined your invitation to collaborate on ${project.title}`,
           });
         });
       res.status(200).json({ message: "Invitation Declined!" });
@@ -1375,7 +1403,6 @@ exports.suggestStep = asyncHandler(async (req, res, next) => {
   try {
     const title = req.body.suggest;
     const user_id = req.user.firstName + req.user.lastName;
-   
 
     let transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",

@@ -6,6 +6,12 @@ const ImpStepSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  user_requests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   skills: {
     skillField: {
       type: mongoose.Schema.Types.ObjectId,
@@ -45,6 +51,7 @@ const ImpStepSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  
   required: false,
 });
 
