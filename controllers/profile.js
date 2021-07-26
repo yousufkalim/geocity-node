@@ -191,7 +191,6 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
     } else {
       const buf = await crypto.randomBytes(20);
       var token = buf.toString("hex");
-      console.log("toekn", token);
       const restPasswordExpires = Date.now() + 36000000;
       var updatedUser = await User.findOneAndUpdate(
         { email: email },
@@ -204,13 +203,13 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
       var smtpTransport = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: "shehzadcs2016@gmail.com",
-          pass: "44ttqqll",
+          user: process.env.MailingId,
+          pass: process.env.MailingPassword,
         },
       });
       var mailOptions = {
         to: email,
-        from: "shehzadcs2016@gmail.com",
+        from: process.env.MailingId,
         subject: "Password Reset",
         text:
           "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
@@ -222,7 +221,6 @@ exports.requestForgetPassword = asyncHandler(async (req, res, next) => {
           "\n\n" +
           "If you did not request this, please ignore this email and your password will remain unchanged.\n",
       };
-      console.log("2", mailOptions);
 
       const info = await smtpTransport
         .sendMail(mailOptions)
