@@ -115,9 +115,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       }
 
       // If project has not assigned City //
-      var city = req.body.address.city;
-      
-        city = req.user.city;
+      var city = req.user.city;
 
         const checkProj = await Project.findOne({ title: req.body.title });
 
@@ -153,6 +151,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
           });
         }
       
+
     }
   } catch (err) {
     res.status(400).json({ message: err.message });

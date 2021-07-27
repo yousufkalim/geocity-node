@@ -57,12 +57,15 @@ app.use(
 //// DataBase Connection ////
 
 mongoose
-  .connect("mongodb://localhost:27017/CP", {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
+  .connect(
+    "mongodb://REDACTED:REDACTED@cluster0.es81r.mongodb.net/geocity",
+    {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    }
+  )
   .then(() => {
     console.log("Database has connected successfully");
   })
@@ -114,7 +117,7 @@ io.on("connection", (socket) => {
 
   //Leave the room if the user closes the socket
   socket.on("disconnect", () => {
-    console.log('discconented')
+    console.log("discconented");
     socket.leave(useris);
   });
   // for dynamic notifications
