@@ -41,7 +41,6 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     let services = Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
-      username: Joi.string().required(),
       firstName: Joi.string().required(),
       lastName: Joi.string().required(),
       city: Joi.string(),
@@ -57,7 +56,6 @@ exports.EditUser = asyncHandler(async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       req.query.id,
       {
-        username: req.body.username,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         city: req.body.city,

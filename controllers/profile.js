@@ -106,7 +106,6 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     let services = Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
-      username: Joi.string().max(20),
       firstName: Joi.string().max(20),
       lastName: Joi.string().max(20),
       facebook: Joi.string().uri().allow(""),
@@ -118,63 +117,65 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       latitude: Joi.string(),
       longitude: Joi.string(),
       profile_picture: Joi.string().max(255),
-      profile_description: Joi.string().max(600),
+      profile_description: Joi.string().min(10).max(600),
       phone: Joi.string()
+        .min(10)
         .max(10)
         .pattern(/^[0-9]+$/),
-      skills: Joi.array().max(3).items(nestedSchema),
-      material: Joi.array().max(50).items(Joi.string()),
+      skills: Joi.array().min(1).max(5).items(nestedSchema),
+      material: Joi.array().min(1).max(50).items(Joi.string()),
     });
 
     const results = schema.validate(body);
     if (results.error) {
-      return res.status(400).send(results.error.details[0].message);
-    }
+      return res
+        .status(400)
+        .send({ message: results.error.details[0].message });
+    } else {
+      // Check if the skills are in database or not, If Not then saving them in the database//
+      const skills = req.body.skills;
+      skills.map(async (val) => {
+        let result = false;
+        var requestedSkill = val.skill;
+        var savedSkillField = await Skill.findById(val.skillField);
+        savedSkillField.skill.map(async (val1) => {
+          if (requestedSkill == val1) {
+            result = true;
+          }
+        });
 
-    // Check if the skills are in database or not, If Not then saving them in the database//
-    const skills = req.body.skills;
-    skills.map(async (val) => {
-      let result = false;
-      var requestedSkill = val.skill;
-      var savedSkillField = await Skill.findById(val.skillField);
-      savedSkillField.skill.map(async (val1) => {
-        if (requestedSkill == val1) {
-          result = true;
+        if (result == false) {
+          await Skill.findByIdAndUpdate(val.skillField, {
+            $push: { skill: requestedSkill },
+          });
         }
       });
 
-      if (result == false) {
-        await Skill.findByIdAndUpdate(val.skillField, {
-          $push: { skill: requestedSkill },
-        });
-      }
-    });
-
-    const user = await User.findByIdAndUpdate(
-      req.query.id,
-      {
-        username: req.body.username,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        facebook: req.body.facebook,
-        instagram: req.body.instagram,
-        youtube: req.body.youtube,
-        availability: req.body.availability,
-        city: req.body.city,
-        zipCode: req.body.zipCode,
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        profile_description: req.body.profile_description,
-        phone: req.body.phone,
-        profile_picture: uploaded_Picture || "default.png",
-        skills: req.body.skills,
-        material: req.body.material,
-      },
-      { new: true }
-    );
-    res
-      .status(200)
-      .json({ message: "Profile Updated successfully", user: user });
+      const user = await User.findByIdAndUpdate(
+        req.query.id,
+        {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          facebook: req.body.facebook,
+          instagram: req.body.instagram,
+          youtube: req.body.youtube,
+          availability: req.body.availability,
+          city: req.body.city,
+          zipCode: req.body.zipCode,
+          latitude: req.body.latitude,
+          longitude: req.body.longitude,
+          profile_description: req.body.profile_description,
+          phone: req.body.phone,
+          profile_picture: uploaded_Picture || "default.png",
+          skills: req.body.skills,
+          material: req.body.material,
+        },
+        { new: true }
+      );
+      res
+        .status(200)
+        .json({ message: "Profile Updated successfully", user: user });
+    }
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -317,7 +318,7 @@ exports.comment = asyncHandler(async (req, res, next) => {
   // console.log(req.query.id, req.body.comment);
   try {
     const loggedUser = await User.findById(req.user.id);
-    const userName = loggedUser.username;
+    const firstName = loggedUser.firstName;
     const comment = req.body.comment;
     const newComment = {
       user: loggedUser.id,
@@ -330,7 +331,7 @@ exports.comment = asyncHandler(async (req, res, next) => {
       },
       { new: true }
     );
-    res.status(200).json({ user: userName, comment: comment, user: user });
+    res.status(200).json({ user: firstName, comment: comment, user: user });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

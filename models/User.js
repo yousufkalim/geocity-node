@@ -23,10 +23,7 @@ const UserSchema = new mongoose.Schema({
     enum: ["active", "deactive"],
     default: "deactive",
   },
-  username: {
-    type: String,
-    required: false,
-  },
+  
   firstName: {
     type: String,
     required: false,
