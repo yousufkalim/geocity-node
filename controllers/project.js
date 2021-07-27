@@ -115,16 +115,13 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       }
 
       // If project has not assigned City //
-
-      var city = req.body.address.city;
-      if (!city) {
-        city = req.user.city;
+      var city = req.user.city;
 
         const checkProj = await Project.findOne({ title: req.body.title });
 
         //// Saving Project in DataBase ////
         if (checkProj) {
-          res.status(400).json({ message: "Project already existed" });
+          return res.status(400).json({ message: "Project already existed" });
         } else {
           const project = await new Project({
             title: req.body.title,
@@ -153,7 +150,8 @@ exports.createProject = asyncHandler(async (req, res, next) => {
             project: project,
           });
         }
-      }
+      
+
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
