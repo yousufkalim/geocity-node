@@ -364,12 +364,11 @@ exports.login = asyncHandler(async (req, res, next) => {
     const result = await User.findOne({
       email: email,
       status: "active",
+      isDeleted: false,
     }).select("+password");
 
     if (!result) {
-      return res
-        .status(400)
-        .send({ message: "You haven't verify your email address yet" });
+      return res.status(400).send({ message: "Invalid Credentials" });
     }
     // Check if password matches
 

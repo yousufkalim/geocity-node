@@ -55,15 +55,12 @@ app.use(
 //// DataBase Connection ////
 
 mongoose
-  .connect(
-    "mongodb://REDACTED:REDACTED@cluster0.es81r.mongodb.net/geocity",
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-    }
-  )
+  .connect("mongodb://localhost:27017/geoCity", {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
   .then(() => {
     console.log("Database has connected successfully");
   })
