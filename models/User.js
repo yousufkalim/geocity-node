@@ -17,13 +17,12 @@ module.exports = mongoose.model("Decision", ProjectDecision);
 
 // USERS SCHEMA
 const UserSchema = new mongoose.Schema({
-  
   status: {
     type: String,
     enum: ["active", "deactive"],
     default: "deactive",
   },
-  
+
   firstName: {
     type: String,
     required: false,
@@ -186,6 +185,12 @@ const UserSchema = new mongoose.Schema({
       skill: {
         type: String,
         required: false,
+      },
+      intentions: {
+        type: String,
+        required: false,
+        enum: ["volunteer", "barter", "paid"],
+        default: "volunteer",
       },
       specialization: {
         type: String,
