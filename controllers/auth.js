@@ -31,7 +31,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     const nestedSchema = Joi.object().keys({
       skillField: Joi.string().required(),
       skill: Joi.string().required(),
-      intentions: Joi.string().valid("volunteer", "barter", "paid"),
+      intentions: Joi.string().valid("bénévole", "troc", "payé"),
       specialization: Joi.string().allow(""),
       score: Joi.string()
         .max(5)

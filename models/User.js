@@ -189,8 +189,8 @@ const UserSchema = new mongoose.Schema({
       intentions: {
         type: String,
         required: false,
-        enum: ["volunteer", "barter", "paid"],
-        default: "volunteer",
+        enum: ["bénévole", "troc", "payé"],
+        default: "bénévole",
       },
       specialization: {
         type: String,
