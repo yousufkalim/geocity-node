@@ -82,7 +82,6 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
     const material1 = JSON.parse(req.body.material);
 
     const body = req.body;
-    // console.log(req.body);
     body.skills = skills1;
     body.material = material1;
 

@@ -15,7 +15,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     const body = req.body;
     body.address = address;
     body.implementation_steps = implementation_steps1;
-    // console.log(body);
+
     // body
     // file = req.file
 
@@ -25,13 +25,14 @@ exports.createProject = asyncHandler(async (req, res, next) => {
     } else {
       uploaded_Picture = "default.png";
     }
-    // console.log(uploaded_Picture);
+
     //// Validation ////
 
     // validation for implementation steps schema //
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
+      intentions: Joi.string().valid("bénévole", "troc", "payé"),
       speciality: Joi.string().max(20).allow(""),
     });
 
@@ -117,7 +118,7 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       // If project has not assigned City //
 
       var city = req.body.address.city;
-      if (!city) {
+      if (city) {
         city = req.user.city;
 
         const checkProj = await Project.findOne({ title: req.body.title });
@@ -177,6 +178,7 @@ exports.editProject = asyncHandler(async (req, res, next) => {
     const skillSchema = Joi.object().keys({
       skillField: Joi.string(),
       skill: Joi.string(),
+      intentions: Joi.string().valid("bénévole", "troc", "payé"),
       speciality: Joi.string().max(20).allow(""),
     });
 
@@ -345,7 +347,6 @@ exports.deleteImplementationStep = asyncHandler(async (req, res, next) => {
   try {
     const projectID = req.query.id;
     const stepID = req.body.id;
-    // console.log(stepID);
     let progress = "";
     const steps_Progress = [];
     var counts = {};
@@ -658,7 +659,6 @@ exports.sendInvitetoProjectOwner = asyncHandler(async (req, res, next) => {
 
     const project = await Project.findById(projectID);
     const receiver = project.project_owner;
-    // console.log(receiver, "reciever");
     const title = project.title;
 
     const sender = await User.findById(senderID);
@@ -1138,8 +1138,6 @@ exports.projectProgress = asyncHandler(async (req, res, next) => {
 
 // Accept and Decline Invite by user //
 exports.inviteCollaboratorDecision = asyncHandler(async (req, res, next) => {
-  // console.log(socket, "sdnjdlids");
-
   try {
     const decision = req.body.decision;
     const projectID = req.query.id;
