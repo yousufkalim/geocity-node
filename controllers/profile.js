@@ -103,7 +103,7 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
         .required(),
     });
 
-    let services = Joi.array().max(3).items(nestedSchema);
+    Joi.array().max(3).items(nestedSchema);
 
     const schema = Joi.object().keys({
       firstName: Joi.string().max(20),
@@ -121,7 +121,8 @@ exports.editProfile = asyncHandler(async (req, res, next) => {
       phone: Joi.string()
         .min(10)
         .max(10)
-        .pattern(/^[0-9]+$/),
+        .pattern(/^[0-9]+$/)
+        .required(),
       skills: Joi.array().min(1).max(5).items(nestedSchema),
       material: Joi.array().min(1).max(50).items(Joi.string()),
     });

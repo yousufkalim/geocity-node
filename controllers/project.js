@@ -1102,6 +1102,25 @@ exports.SearchCollaboratorsByCategory = asyncHandler(async (req, res, next) => {
   }
 });
 
+//SearchCollaboratorsByintention
+exports.SearchCollaboratorsByintention = asyncHandler(
+  async (req, res, next) => {
+    try {
+      const intention = req.body.intension;
+      const users = await User.find({});
+      let intensions = users.filter((dt) => dt.intension == intention);
+      if (intensions == "") {
+        res
+          .status(200)
+          .send({ message: "No Users found with this intention name" });
+      } else {
+        res.status(200).json(intensions);
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+);
 //Project Progress //
 exports.projectProgress = asyncHandler(async (req, res, next) => {
   try {
