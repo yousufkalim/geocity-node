@@ -56,7 +56,9 @@ const {
   deleteComment,
   addImplementationStep,
   deleteImplementationStep,
-  unlike,suggestStep
+  unlike,
+  suggestStep,
+  SearchCollaboratorsByintention,
 } = require("../controllers/project");
 
 //// middleware functions ////
@@ -93,7 +95,6 @@ router.post(
 
 router.post("/add-step", protect, addImplementationStep);
 router.post("/suggestStep", protect, suggestStep);
-
 
 //// EDIT Implementation Step ////
 
@@ -191,6 +192,12 @@ router.post(
   "/SearchCollaboratorsByCategory",
   protect,
   SearchCollaboratorsByCategory
+);
+//// Search Collaborators with intension Name ////
+router.post(
+  "/SearchCollaboratorsByintention",
+  protect,
+  SearchCollaboratorsByintention
 );
 
 module.exports = router;

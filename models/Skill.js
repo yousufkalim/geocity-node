@@ -5,11 +5,12 @@ const SkillSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  skill : [{
-    
-      type : String,
-      required : false
-  }],
+  skill: [
+    {
+      type: String,
+      required: false,
+    },
+  ],
   isDeleted: {
     type: Boolean,
     required: false,

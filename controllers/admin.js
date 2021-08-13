@@ -15,7 +15,7 @@ exports.UsersList = asyncHandler(async (req, res, next) => {
         res.status(200).json({
           users: docs,
         });
-    });
+    }).populate("skills.skillField");
   } catch (err) {
     next(err);
   }

@@ -22,6 +22,12 @@ const ImpStepSchema = new mongoose.Schema({
       type: String,
       required: false,
     },
+    intentions: {
+      type: String,
+      required: false,
+      enum: ["bénévole", "troc", "payé"],
+      default: "bénévole",
+    },
     speciality: {
       type: String,
       required: false,
@@ -51,7 +57,7 @@ const ImpStepSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
-  
+
   required: false,
 });
 

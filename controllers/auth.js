@@ -31,6 +31,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     const nestedSchema = Joi.object().keys({
       skillField: Joi.string().required(),
       skill: Joi.string().required(),
+      intentions: Joi.string().valid("bénévole", "troc", "payé"),
       specialization: Joi.string().allow(""),
       score: Joi.string()
         .max(5)
@@ -364,12 +365,11 @@ exports.login = asyncHandler(async (req, res, next) => {
     const result = await User.findOne({
       email: email,
       status: "active",
+      isDeleted: false,
     }).select("+password");
 
     if (!result) {
-      return res
-        .status(400)
-        .send({ message: "You haven't verify your email address yet" });
+      return res.status(400).send({ message: "Invalid Credentials" });
     }
     // Check if password matches
 
