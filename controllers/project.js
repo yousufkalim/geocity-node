@@ -65,7 +65,6 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       category: Joi.string(),
       project_owner: Joi.string(),
     });
-
     const results = schema.validate(req.body);
     if (results.error) {
       return res
@@ -116,11 +115,9 @@ exports.createProject = asyncHandler(async (req, res, next) => {
       }
 
       // If project has not assigned City //
-
       var city = req.body.address.city;
       if (city) {
         city = req.user.city;
-
 
         const checkProj = await Project.findOne({ title: req.body.title });
 
@@ -155,10 +152,9 @@ exports.createProject = asyncHandler(async (req, res, next) => {
             project: project,
           });
         }
-      
-
-    } else {
-      res.status(400).json({ message: "City is required" });
+      } else {
+        res.status(400).json({ message: "City is required" });
+      }
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
