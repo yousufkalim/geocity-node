@@ -16,12 +16,14 @@ const Joi = require("joi");
 var cors = require("cors");
 const app = express();
 const server = http.createServer(app);
+const logger = require("morgan")
 require("./jobs/agenda");
 
 //// Body Parser Middleware ////
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(logger("dev"))
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //// Cookie Parser ////
