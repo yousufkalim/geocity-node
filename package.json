@@ -22,7 +22,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "http": "0.0.1-security",
-    "joi": "^17.2.1",
+    "joi": "^17.13.6",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.6",
     "morgan": "^1.10.0",
